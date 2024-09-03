@@ -32,11 +32,11 @@ export default function DashboardPage() {
           intelligence
         </Text>
 
-        {message && (
+        {/* {message && (
           <Text size="3" color={message.startsWith("Error") ? "red" : "green"}>
             {message}
           </Text>
-        )}
+        )} */}
 
         <GithubIntegration />
       </Flex>
