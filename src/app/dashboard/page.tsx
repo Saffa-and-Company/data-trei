@@ -1,28 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Flex, Text, Container, Heading, Button } from "@radix-ui/themes";
 import { createClient } from "@/utils/supabase/client";
 
 import GithubIntegration from "@/components/GithubIntegration";
 
 export default function DashboardPage() {
-  const searchParams = useSearchParams();
-  const [message, setMessage] = useState("");
   const router = useRouter();
   const supabase = createClient();
-
-  useEffect(() => {
-    const success = searchParams.get("success");
-    const error = searchParams.get("error");
-
-    if (success === "github_connected") {
-      setMessage("Successfully connected to GitHub!");
-    } else if (error) {
-      setMessage(`Error: ${error.replace(/_/g, " ")}`);
-    }
-  }, [searchParams]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();

@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import Loader from "@/components/Loader";
 
 export default function DashboardLayout({
   children,
