@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { Flex, Text, Container, Heading } from "@radix-ui/themes";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Flex, Text, Container, Heading, Button } from "@radix-ui/themes";
+import { createClient } from "@/utils/supabase/client";
 
 import GithubIntegration from "@/components/GithubIntegration";
 
 export default function DashboardPage() {
   const searchParams = useSearchParams();
   const [message, setMessage] = useState("");
+  const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -21,8 +24,22 @@ export default function DashboardPage() {
     }
   }, [searchParams]);
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error logging out:", error);
+    } else {
+      router.push("/");
+    }
+  };
+
   return (
     <Container size="3">
+      <Flex justify="end" py="4">
+        <Button variant="soft" onClick={handleLogout}>
+          Logout
+        </Button>
+      </Flex>
       <Flex direction="column" gap="6" align="center" py="9">
         <Heading size="8" align="center">
           Welcome to Data Trei

@@ -1,23 +1,30 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import Loader from "@/components/Loader";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
   const supabase = createClient();
 
-  const { data, error } = await supabase.auth.getUser();
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+      }
+    };
 
-  if (!data) {
-    return <Loader />;
-  }
-
-  if (!data.user) {
-    redirect("/login");
-  }
+    checkUser();
+  }, [router, supabase.auth]);
 
   return <>{children}</>;
 }
