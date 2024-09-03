@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, Flex, Heading, Text } from "@radix-ui/themes";
 import { useRouter } from "next/navigation";
 
