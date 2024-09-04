@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Flex, Text, Card, ScrollArea } from "@radix-ui/themes";
+import { Button, Flex, Text, Card, ScrollArea, Select } from "@radix-ui/themes";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 interface Repo {
@@ -16,6 +16,8 @@ export default function GitHubIntegration() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
+
   useEffect(() => {
     checkGitHubConnection();
   }, []);
@@ -45,6 +47,29 @@ export default function GitHubIntegration() {
     setLoading(false);
   };
 
+  const handleTrackRepo = async () => {
+    if (!selectedRepo) return;
+    try {
+      const response = await fetch("/api/github/track-repo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ repoName: selectedRepo }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert(`Successfully set up tracking for ${selectedRepo}`);
+      } else {
+        console.error("Error tracking repo:", data.error);
+        alert(`Failed to set up tracking for ${selectedRepo}`);
+      }
+    } catch (error) {
+      console.error("Error tracking repo:", error);
+      alert("An error occurred while trying to track the repository");
+    }
+  };
+
   return (
     <Flex
       direction="column"
@@ -67,6 +92,26 @@ export default function GitHubIntegration() {
           {repos.length > 0 && (
             <>
               <Text size="2">Showing {repos.length} repositories</Text>
+              <Select.Root
+                value={selectedRepo || ""}
+                onValueChange={setSelectedRepo}
+              >
+                <Select.Trigger />
+                <Select.Content>
+                  {repos.map((repo) => (
+                    <Select.Item key={repo.id} value={repo.name}>
+                      {repo.name}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+              <Button
+                onClick={handleTrackRepo}
+                size="3"
+                disabled={!selectedRepo}
+              >
+                Track Selected Repository
+              </Button>
               <Card style={{ width: "100%" }}>
                 <ScrollArea style={{ height: "300px" }}>
                   <Flex direction="column" gap="2" p="2">

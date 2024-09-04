@@ -6,6 +6,7 @@ import { Flex, Text, Container, Heading, Button } from "@radix-ui/themes";
 import { createClient } from "@/utils/supabase/client";
 
 import GithubIntegration from "@/components/GithubIntegration";
+import TrackedRepos from "@/components/TrackedRepos";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -36,13 +37,8 @@ export default function DashboardPage() {
           intelligence
         </Text>
 
-        {/* {message && (
-          <Text size="3" color={message.startsWith("Error") ? "red" : "green"}>
-            {message}
-          </Text>
-        )} */}
-
         <GithubIntegration />
+        <TrackedRepos />
       </Flex>
     </Container>
   );
