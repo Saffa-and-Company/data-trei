@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       break;
 
     case 'star':
-      message = `Repository starred by ${payload.sender.login}`;
+      message = `Repository ${payload.action} by ${payload.sender.login}`;
       break;
     case 'branch_protection_rule':
       message = `Branch protection rule ${payload.action}: ${payload.branch_protection_rule.name}`;
