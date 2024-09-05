@@ -15,6 +15,9 @@ import { GitHubLogoIcon } from "@radix-ui/react-icons";
 interface Repo {
   id: number;
   name: string;
+  owner: {
+    login: string;
+  };
 }
 
 export default function GitHubIntegration() {
@@ -24,7 +27,7 @@ export default function GitHubIntegration() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
+  const [selectedRepo, setSelectedRepo] = useState<Repo | null>(null);
 
   useEffect(() => {
     checkGitHubConnection();
@@ -51,12 +54,17 @@ export default function GitHubIntegration() {
     try {
       const response = await fetch(`/api/github/repos?page=${currentPage}`);
       const data = await response.json();
-      setRepos((prevRepos) => [...prevRepos, ...data.repos]);
-      setHasNextPage(data.hasNextPage);
-      setTotalCount(data.totalCount);
-      setCurrentPage(data.currentPage + 1);
+      if (response.status === 401) {
+        setIsConnected(false);
+      } else {
+        setRepos((prevRepos) => [...prevRepos, ...data.repos]);
+        setHasNextPage(data.hasNextPage);
+        setTotalCount(data.totalCount);
+        setCurrentPage(data.currentPage + 1);
+      }
     } catch (error) {
       console.error("Error fetching repos:", error);
+      setIsConnected(false);
     }
     setLoading(false);
   };
@@ -69,14 +77,33 @@ export default function GitHubIntegration() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ repoName: selectedRepo }),
+        body: JSON.stringify({
+          repoName: selectedRepo.name,
+          repoOwner: selectedRepo.owner.login,
+        }),
       });
       const data = await response.json();
       if (data.success) {
-        alert(`Successfully set up tracking for ${selectedRepo}`);
+        alert(
+          `Successfully set up tracking for ${selectedRepo.owner.login}/${selectedRepo.name}`
+        );
+        // Optionally, refresh the list of tracked repos here
       } else {
         console.error("Error tracking repo:", data.error);
-        alert(`Failed to set up tracking for ${selectedRepo}`);
+        if (response.status === 403) {
+          alert(
+            `Unable to set up tracking for ${selectedRepo.owner.login}/${selectedRepo.name}. You may not have sufficient permissions to create webhooks.`
+          );
+        } else if (data.error === "GitHub not connected") {
+          setIsConnected(false);
+          alert(
+            "Your GitHub connection has expired. Please reconnect your account."
+          );
+        } else {
+          alert(
+            `Failed to set up tracking for ${selectedRepo.owner.login}/${selectedRepo.name}: ${data.error}`
+          );
+        }
       }
     } catch (error) {
       console.error("Error tracking repo:", error);
@@ -117,13 +144,15 @@ export default function GitHubIntegration() {
                           padding: "8px",
                           cursor: "pointer",
                           backgroundColor:
-                            selectedRepo === repo.name
+                            selectedRepo?.id === repo.id
                               ? "var(--accent-9)"
                               : "inherit",
                         }}
-                        onClick={() => setSelectedRepo(repo.name)}
+                        onClick={() => setSelectedRepo(repo)}
                       >
-                        <Text>{repo.name}</Text>
+                        <Text>
+                          {repo.owner.login} / {repo.name}
+                        </Text>
                       </Card>
                     ))}
                     {hasNextPage && !loading && (

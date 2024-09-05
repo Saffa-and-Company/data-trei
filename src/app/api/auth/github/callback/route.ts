@@ -34,9 +34,13 @@ export async function GET(request: Request) {
   // Store the access token in your database
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
+    const expiresAt = new Date();
+    expiresAt.setSeconds(expiresAt.getSeconds() + tokenData.expires_in);
+    
     const { error } = await supabase.from('github_connections').upsert({
       user_id: user.id,
       access_token: tokenData.access_token,
+      expires_at: expiresAt.toISOString(),
     }, {
       onConflict: 'user_id',
       ignoreDuplicates: false

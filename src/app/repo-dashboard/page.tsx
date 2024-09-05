@@ -17,6 +17,7 @@ import {
   EyeOpenIcon,
 } from "@radix-ui/react-icons";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 interface TrackedRepo {
   id: number;
@@ -36,6 +37,7 @@ export default function RepoDashboardPage() {
   const [repoLogs, setRepoLogs] = useState<RepoLog[]>([]);
   const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
   const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     fetchTrackedRepos();
@@ -68,8 +70,14 @@ export default function RepoDashboardPage() {
       .from("repo_logs")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) console.error("Error fetching repo logs:", error);
-    else setRepoLogs(data);
+    if (error) {
+      console.error("Error fetching repo logs:", error);
+      if (error.message === "GitHub token is invalid or revoked") {
+        router.push("/dashboard");
+      }
+    } else {
+      setRepoLogs(data);
+    }
   };
 
   const handleRepoLogsChange = (payload: any) => {
