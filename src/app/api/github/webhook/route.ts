@@ -50,6 +50,13 @@ export async function POST(request: Request) {
     case 'branch_protection_policy':
       message = `Branch protection policy ${payload.action}: ${payload.branch_protection_policy.name}`;
       break;
+    case 'repository':
+      if (payload.action === 'downloaded') {
+        message = `Repository downloaded by ${payload.sender.login}`;
+      } else {
+        message = `Repository ${payload.action} by ${payload.sender.login}`;
+      }
+      break;
     default:
       message = `Unhandled event type: ${eventType}`;
   }

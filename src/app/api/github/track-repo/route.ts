@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         content_type: 'json',
         insecure_ssl: '0',
       },
-      events: ['*']
+      events: ['push', 'pull_request', 'issues', 'issue_comment', 'repository', '*']
     });
 
     if (webhookResponse.status !== 201) {
