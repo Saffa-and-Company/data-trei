@@ -80,10 +80,10 @@ export default function TrackedRepos() {
           {repoLogs.map((log) => (
             <Card key={log.id} style={{ marginBottom: "8px" }}>
               <Text size="2" weight="bold">
-                {log.repo_name}
+                {log.repo_name}{" "}
               </Text>
               <Text size="2">
-                {log.event_type}: {log.message}
+                {log.event_type} : {log.message}
               </Text>
               <Text size="1" color="gray">
                 {new Date(log.created_at).toLocaleString()}

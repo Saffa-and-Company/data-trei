@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Flex, Text, Container, Heading, Button } from "@radix-ui/themes";
 import { createClient } from "@/utils/supabase/client";
+import { ActivityLogIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 
 import GithubIntegration from "@/components/GithubIntegration";
 import TrackedRepos from "@/components/TrackedRepos";
@@ -37,8 +38,18 @@ export default function DashboardPage() {
           intelligence
         </Text>
 
+        <Flex gap="4">
+          <Button onClick={() => router.push("/repo-dashboard")} size="3">
+            <ActivityLogIcon />
+            View Repository Dashboard
+          </Button>
+          {/* <Button onClick={() => router.push("/github-integration")} size="3">
+            <GitHubLogoIcon />
+            Manage GitHub Integration
+          </Button> */}
+        </Flex>
+
         <GithubIntegration />
-        <TrackedRepos />
       </Flex>
     </Container>
   );

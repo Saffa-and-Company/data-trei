@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Flex, Text, Card, ScrollArea, Select } from "@radix-ui/themes";
+import {
+  Button,
+  Flex,
+  Text,
+  Card,
+  ScrollArea,
+  Select,
+  Spinner,
+} from "@radix-ui/themes";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 interface Repo {
@@ -21,6 +29,12 @@ export default function GitHubIntegration() {
   useEffect(() => {
     checkGitHubConnection();
   }, []);
+
+  useEffect(() => {
+    if (isConnected) {
+      fetchRepos();
+    }
+  }, [isConnected]);
 
   const checkGitHubConnection = async () => {
     const response = await fetch("/api/github/connection");
@@ -84,39 +98,31 @@ export default function GitHubIntegration() {
         </Button>
       ) : (
         <>
-          {repos.length === 0 && (
-            <Button onClick={fetchRepos} size="3" disabled={loading}>
-              {loading ? "Fetching..." : "Fetch Repositories"}
-            </Button>
+          {loading && (
+            <Flex align="center" justify="center" gap="2">
+              <Text>Fetching repositories</Text>
+              <Spinner size="3" />
+            </Flex>
           )}
           {repos.length > 0 && (
             <>
               <Text size="2">Showing {repos.length} repositories</Text>
-              <Select.Root
-                value={selectedRepo || ""}
-                onValueChange={setSelectedRepo}
-              >
-                <Select.Trigger />
-                <Select.Content>
-                  {repos.map((repo) => (
-                    <Select.Item key={repo.id} value={repo.name}>
-                      {repo.name}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-              <Button
-                onClick={handleTrackRepo}
-                size="3"
-                disabled={!selectedRepo}
-              >
-                Track Selected Repository
-              </Button>
               <Card style={{ width: "100%" }}>
                 <ScrollArea style={{ height: "300px" }}>
                   <Flex direction="column" gap="2" p="2">
                     {repos.map((repo) => (
-                      <Card key={repo.id} style={{ padding: "8px" }}>
+                      <Card
+                        key={repo.id}
+                        style={{
+                          padding: "8px",
+                          cursor: "pointer",
+                          backgroundColor:
+                            selectedRepo === repo.name
+                              ? "var(--accent-9)"
+                              : "inherit",
+                        }}
+                        onClick={() => setSelectedRepo(repo.name)}
+                      >
                         <Text>{repo.name}</Text>
                       </Card>
                     ))}
@@ -133,6 +139,13 @@ export default function GitHubIntegration() {
                   </Flex>
                 </ScrollArea>
               </Card>
+              <Button
+                onClick={handleTrackRepo}
+                size="3"
+                disabled={!selectedRepo}
+              >
+                Track Selected Repository
+              </Button>
             </>
           )}
         </>
