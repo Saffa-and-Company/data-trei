@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, Text, Flex, ScrollArea } from "@radix-ui/themes";
+import { createClient } from "@/utils/supabase/client";
 
 interface TrackedRepo {
   id: number;
@@ -17,22 +18,46 @@ interface RepoLog {
 export default function TrackedRepos() {
   const [trackedRepos, setTrackedRepos] = useState<TrackedRepo[]>([]);
   const [repoLogs, setRepoLogs] = useState<RepoLog[]>([]);
+  const supabase = createClient();
 
   useEffect(() => {
     fetchTrackedRepos();
     fetchRepoLogs();
+
+    const repoLogsSubscription = supabase
+      .channel("repo_logs_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "repo_logs" },
+        handleRepoLogsChange
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(repoLogsSubscription);
+    };
   }, []);
 
   const fetchTrackedRepos = async () => {
-    const response = await fetch("/api/github/tracked-repos");
-    const data = await response.json();
-    setTrackedRepos(data.repos);
+    const { data, error } = await supabase
+      .from("tracked_repos")
+      .select("id, repo_name");
+    if (error) console.error("Error fetching tracked repos:", error);
+    else setTrackedRepos(data);
   };
 
   const fetchRepoLogs = async () => {
-    const response = await fetch("/api/github/repo-logs");
-    const data = await response.json();
-    setRepoLogs(data.logs);
+    const { data, error } = await supabase
+      .from("repo_logs")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) console.error("Error fetching repo logs:", error);
+    else setRepoLogs(data);
+  };
+
+  const handleRepoLogsChange = (payload: any) => {
+    console.log("Change received!", payload);
+    fetchRepoLogs(); // Refetch logs when a change occurs
   };
 
   return (

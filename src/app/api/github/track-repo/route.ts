@@ -33,7 +33,6 @@ export async function POST(request: Request) {
 
     // Set up webhook for the repository
     const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/github/webhook`;
-    console.log('Webhook URL:', webhookUrl); // Log the webhook URL
 
     const webhookResponse = await octokit.repos.createWebhook({
       owner: githubUser.login,
@@ -43,7 +42,20 @@ export async function POST(request: Request) {
         content_type: 'json',
         insecure_ssl: '0',
       },
-      events: ['push', 'pull_request'],
+      events: ['push', 
+        'pull_request', 
+        'issues', 
+        'issue_comment', 
+        'create',
+        'delete',
+        'fork',
+        'release',
+        'watch',
+        'gollum',
+        'workflow_run',
+        'repository',
+      ]
+
     });
 
     console.log('Webhook response:', webhookResponse)
