@@ -42,20 +42,7 @@ export async function POST(request: Request) {
         content_type: 'json',
         insecure_ssl: '0',
       },
-      events: ['push', 
-        'pull_request', 
-        'issues', 
-        'issue_comment', 
-        'create',
-        'delete',
-        'fork',
-        'release',
-        'watch',
-        'gollum',
-        'workflow_run',
-        'repository',
-      ]
-
+      events: ['*']  
     });
 
     console.log('Webhook response:', webhookResponse)
