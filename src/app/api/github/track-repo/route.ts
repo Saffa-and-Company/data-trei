@@ -51,14 +51,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to set up webhook', details: webhookResponse.data }, { status: 500 });
     }
 
-    // Store the tracked repository in the database
+    // Store or update the tracked repository in the database
     const { error } = await supabase
       .from('tracked_repos')
-      .insert({ user_id: user.id, repo_name: repoName });
+      .upsert(
+        { user_id: user.id, repo_name: repoName },
+        { onConflict: 'user_id,repo_name' }
+      );
 
     if (error) {
-      console.error('Database insertion error:', error);
-      return NextResponse.json({ error: 'Failed to store tracked repository', details: error }, { status: 500 });
+      console.error('Database upsert error:', error);
+      return NextResponse.json({ error: 'Failed to store or update tracked repository', details: error }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
