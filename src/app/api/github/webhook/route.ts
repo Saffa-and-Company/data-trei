@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       break;
 
     case 'ping':
-      message = `Repository ${payload.action} by ${payload.sender.login}`;
+      message = `Repository pinged by ${payload.sender.login}`;
       break;
     default:
       message = `Unhandled event type: ${eventType}`;
