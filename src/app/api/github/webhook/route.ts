@@ -8,18 +8,42 @@ export async function POST(request: Request) {
   );
   const payload = await request.json();
 
-  // Extract relevant information from the payload
   const repoName = payload.repository.name;
   const eventType = request.headers.get('X-GitHub-Event');
   let message = '';
 
-  if (eventType === 'push') {
-    message = `New commit: ${payload.head_commit.message}`;
-  } else if (eventType === 'pull_request') {
-    message = `Pull request ${payload.action}: ${payload.pull_request.title}`;
+  switch (eventType) {
+    case 'push':
+      message = `New commit: ${payload.head_commit.message}`;
+      break;
+    case 'pull_request':
+      message = `Pull request ${payload.action}: ${payload.pull_request.title}`;
+      break;
+    case 'issues':
+      message = `Issue ${payload.action}: ${payload.issue.title}`;
+      break;
+    case 'issue_comment':
+      message = `New comment on issue #${payload.issue.number}: ${payload.comment.body.substring(0, 100)}...`;
+      break;
+    case 'create':
+      message = `New ${payload.ref_type} created: ${payload.ref}`;
+      break;
+    case 'delete':
+      message = `${payload.ref_type} deleted: ${payload.ref}`;
+      break;
+    case 'fork':
+      message = `Repository forked by ${payload.forkee.owner.login}`;
+      break;
+    case 'watch':
+      message = `Repository ${payload.action} by ${payload.sender.login}`;
+      break;
+    case 'release':
+      message = `New release ${payload.release.tag_name}: ${payload.release.name}`;
+      break;
+    default:
+      message = `Unhandled event type: ${eventType}`;
   }
 
-  // Store the log in the database
   const { error } = await supabase
     .from('repo_logs')
     .insert({

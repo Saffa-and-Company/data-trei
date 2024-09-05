@@ -126,6 +126,7 @@ export default function RepoDashboardPage() {
                     </Text>
                   </Flex>
                   <Text>{log.message}</Text>
+                  <br />
                   <Text size="1" color="gray" mt="2">
                     Repository: {log.repo_name}
                   </Text>
