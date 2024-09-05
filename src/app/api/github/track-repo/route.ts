@@ -27,11 +27,25 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Fetch the user's GitHub username
     const octokit = new Octokit({ auth: connection.access_token });
     const { data: githubUser } = await octokit.users.getAuthenticated();
 
-    // Set up webhook for the repository
+    // Fetch existing webhooks
+    const { data: existingHooks } = await octokit.repos.listWebhooks({
+      owner: githubUser.login,
+      repo: repoName,
+    });
+
+    // Delete existing webhooks
+    for (const hook of existingHooks) {
+      await octokit.repos.deleteWebhook({
+        owner: githubUser.login,
+        repo: repoName,
+        hook_id: hook.id,
+      });
+    }
+
+    // Set up new webhook
     const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/github/webhook`;
 
     const webhookResponse = await octokit.repos.createWebhook({
@@ -42,10 +56,9 @@ export async function POST(request: Request) {
         content_type: 'json',
         insecure_ssl: '0',
       },
-      events: ['*']  
+      events: ['*']
     });
 
-    console.log('Webhook response:', webhookResponse)
     if (webhookResponse.status !== 201) {
       console.error('Webhook creation failed:', webhookResponse.data);
       return NextResponse.json({ error: 'Failed to set up webhook', details: webhookResponse.data }, { status: 500 });
