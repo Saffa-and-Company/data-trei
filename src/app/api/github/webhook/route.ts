@@ -40,6 +40,16 @@ export async function POST(request: Request) {
     case 'release':
       message = `New release ${payload.release.tag_name}: ${payload.release.name}`;
       break;
+
+    case 'star':
+      message = `Repository starred by ${payload.sender.login}`;
+      break;
+    case 'branch_protection_rule':
+      message = `Branch protection rule ${payload.action}: ${payload.branch_protection_rule.name}`;
+      break;
+    case 'branch_protection_policy':
+      message = `Branch protection policy ${payload.action}: ${payload.branch_protection_policy.name}`;
+      break;
     default:
       message = `Unhandled event type: ${eventType}`;
   }
