@@ -11,11 +11,7 @@ import {
   ScrollArea,
   Badge,
 } from "@radix-ui/themes";
-import {
-  GitHubLogoIcon,
-  ActivityLogIcon,
-  EyeOpenIcon,
-} from "@radix-ui/react-icons";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -41,14 +37,14 @@ export default function RepoDashboardPage() {
 
   useEffect(() => {
     fetchTrackedRepos();
-    fetchRepoLogs();
+    fetchEventLogs();
 
     const repoLogsSubscription = supabase
-      .channel("repo_logs_changes")
+      .channel("event_logs_changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "repo_logs" },
-        handleRepoLogsChange
+        { event: "*", schema: "public", table: "event_logs" },
+        handleEventLogsChange
       )
       .subscribe();
 
@@ -65,13 +61,13 @@ export default function RepoDashboardPage() {
     else setTrackedRepos(data);
   };
 
-  const fetchRepoLogs = async () => {
+  const fetchEventLogs = async () => {
     const { data, error } = await supabase
-      .from("repo_logs")
+      .from("event_logs")
       .select("*")
       .order("created_at", { ascending: false });
     if (error) {
-      console.error("Error fetching repo logs:", error);
+      console.error("Error fetching event logs:", error);
       if (error.message === "GitHub token is invalid or revoked") {
         router.push("/dashboard");
       }
@@ -80,9 +76,9 @@ export default function RepoDashboardPage() {
     }
   };
 
-  const handleRepoLogsChange = (payload: any) => {
+  const handleEventLogsChange = (payload: any) => {
     console.log("Change received!", payload);
-    fetchRepoLogs();
+    fetchEventLogs();
   };
 
   const filteredLogs = selectedRepo

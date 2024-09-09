@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, Text, Flex, ScrollArea } from "@radix-ui/themes";
 import { createClient } from "@/utils/supabase/client";
-
+import { useRouter } from "next/navigation";
 interface TrackedRepo {
   id: number;
   repo_name: string;
@@ -17,18 +17,18 @@ interface RepoLog {
 
 export default function TrackedRepos() {
   const [trackedRepos, setTrackedRepos] = useState<TrackedRepo[]>([]);
-  const [repoLogs, setRepoLogs] = useState<RepoLog[]>([]);
+  const [eventLogs, setEventLogs] = useState<RepoLog[]>([]);
   const supabase = createClient();
-
+  const router = useRouter();
   useEffect(() => {
     fetchTrackedRepos();
-    fetchRepoLogs();
+    fetchEventLogs();
 
     const repoLogsSubscription = supabase
-      .channel("repo_logs_changes")
+      .channel("event_logs_changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "repo_logs" },
+        { event: "*", schema: "public", table: "event_logs" },
         handleRepoLogsChange
       )
       .subscribe();
@@ -46,18 +46,24 @@ export default function TrackedRepos() {
     else setTrackedRepos(data);
   };
 
-  const fetchRepoLogs = async () => {
+  const fetchEventLogs = async () => {
     const { data, error } = await supabase
-      .from("repo_logs")
+      .from("event_logs")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) console.error("Error fetching repo logs:", error);
-    else setRepoLogs(data);
+    if (error) {
+      console.error("Error fetching event logs:", error);
+      if (error.message === "GitHub token is invalid or revoked") {
+        router.push("/dashboard");
+      }
+    } else {
+      setEventLogs(data);
+    }
   };
 
   const handleRepoLogsChange = (payload: any) => {
     console.log("Change received!", payload);
-    fetchRepoLogs(); // Refetch logs when a change occurs
+    fetchEventLogs(); // Refetch logs when a change occurs
   };
 
   return (
@@ -77,7 +83,7 @@ export default function TrackedRepos() {
           Repository Logs
         </Text>
         <ScrollArea style={{ height: "300px" }}>
-          {repoLogs.map((log) => (
+          {eventLogs.map((log) => (
             <Card key={log.id} style={{ marginBottom: "8px" }}>
               <Text size="2" weight="bold">
                 {log.repo_name}{" "}

@@ -63,8 +63,9 @@ export async function POST(request: Request) {
   }
 
   const { error } = await supabase
-    .from('repo_logs')
+    .from('event_logs')
     .insert({
+      source: 'github',
       repo_name: repoName,
       event_type: eventType,
       message: message,

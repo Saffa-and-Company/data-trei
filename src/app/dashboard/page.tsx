@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Flex, Text, Container, Heading, Button } from "@radix-ui/themes";
 import { createClient } from "@/utils/supabase/client";
-import { ActivityLogIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
+import {
+  ActivityLogIcon,
+  GitHubLogoIcon,
+  LockClosedIcon,
+} from "@radix-ui/react-icons";
 
 import GithubIntegration from "@/components/GithubIntegration";
 import TrackedRepos from "@/components/TrackedRepos";
@@ -47,6 +51,10 @@ export default function DashboardPage() {
             <GitHubLogoIcon />
             Manage GitHub Integration
           </Button> */}
+          <Button onClick={() => router.push("/api-keys")} size="3">
+            <LockClosedIcon />
+            Manage API Keys
+          </Button>
         </Flex>
 
         <GithubIntegration />

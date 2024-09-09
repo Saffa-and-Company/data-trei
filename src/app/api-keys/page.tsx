@@ -1,0 +1,199 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Flex,
+  Heading,
+  Button,
+  Card,
+  Text,
+  TextField,
+  Dialog,
+  Switch,
+} from "@radix-ui/themes";
+import {
+  LockClosedIcon,
+  PlusIcon,
+  TrashIcon,
+  CopyIcon,
+} from "@radix-ui/react-icons";
+import { createClient } from "@/utils/supabase/client";
+import { successToast, errorToast } from "@/components/Toast";
+
+interface ApiKey {
+  id: string;
+  name: string;
+  key: string;
+  active: boolean;
+  created_at: string;
+  last_used_at: string | null;
+  usage_count: number;
+  usage_limit: number | null;
+}
+
+export default function ApiKeysPage() {
+  const router = useRouter();
+  const supabase = createClient();
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [toastTitle, setToastTitle] = useState("");
+  const [toastDescription, setToastDescription] = useState("");
+  const [toastOpen, setToastOpen] = useState(false);
+  useEffect(() => {
+    fetchApiKeys();
+  }, []);
+
+  const fetchApiKeys = async () => {
+    const { data, error } = await supabase.from("api_keys").select("*");
+    if (error) {
+      console.error("Error fetching API keys:", error);
+    } else {
+      setApiKeys(data);
+    }
+  };
+
+  const createApiKey = async () => {
+    const response = await fetch("/api/keys", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      fetchApiKeys();
+    } else {
+      console.error("Error creating API key:", await response.text());
+    }
+  };
+
+  const toggleApiKey = async (id: string, active: boolean) => {
+    const { error } = await supabase
+      .from("api_keys")
+      .update({ active })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error updating API key:", error);
+    } else {
+      fetchApiKeys();
+    }
+  };
+
+  const deleteApiKey = async (id: string) => {
+    const { error } = await supabase.from("api_keys").delete().eq("id", id);
+
+    if (error) {
+      console.error("Error deleting API key:", error);
+    } else {
+      fetchApiKeys();
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        successToast("API key copied to clipboard");
+      },
+      (err) => {
+        errorToast("Failed to copy API key");
+      }
+    );
+  };
+
+  return (
+    <Flex direction="column" gap="6" p="6">
+      <Flex justify="between" align="center">
+        <Heading size="8">API Key Management</Heading>
+        <Button variant="soft" onClick={() => router.push("/dashboard")}>
+          Back to Dashboard
+        </Button>
+      </Flex>
+
+      <Card>
+        <Heading size="3" mb="4">
+          Create New API Key
+        </Heading>
+        <Flex gap="4" align="end">
+          <Button onClick={createApiKey}>
+            <PlusIcon />
+            Create Key
+          </Button>
+        </Flex>
+      </Card>
+
+      <Card>
+        <Heading size="3" mb="4">
+          Your API Keys
+        </Heading>
+        <Flex direction="column" gap="4">
+          {apiKeys.map((key) => (
+            <Card key={key.id}>
+              <Flex justify="between" align="center">
+                <Flex direction="column" gap="1">
+                  <Text weight="bold">{key.name}</Text>
+                  <Text size="1">
+                    Created: {new Date(key.created_at).toLocaleString()}
+                  </Text>
+                  {key.last_used_at && (
+                    <Text size="1">
+                      Last used: {new Date(key.last_used_at).toLocaleString()}
+                    </Text>
+                  )}
+                  <Text size="1">
+                    Usage: {key.usage_count} / {key.usage_limit || "∞"}
+                  </Text>
+                </Flex>
+                <Flex gap="4" align="center">
+                  <Button
+                    variant="soft"
+                    onClick={() => copyToClipboard(key.key)}
+                  >
+                    <CopyIcon />
+                    Copy
+                  </Button>
+                  <Switch
+                    checked={key.active}
+                    onCheckedChange={(checked) => toggleApiKey(key.id, checked)}
+                  />
+                  <Dialog.Root>
+                    <Dialog.Trigger>
+                      <Button color="red" variant="soft">
+                        <TrashIcon />
+                        Delete
+                      </Button>
+                    </Dialog.Trigger>
+                    <Dialog.Content>
+                      <Dialog.Title>Confirm Deletion</Dialog.Title>
+                      <Dialog.Description>
+                        Are you sure you want to delete this API key? This
+                        action cannot be undone.
+                      </Dialog.Description>
+                      <Flex gap="3" mt="4" justify="end">
+                        <Dialog.Close>
+                          <Button variant="soft" color="gray">
+                            Cancel
+                          </Button>
+                        </Dialog.Close>
+                        <Dialog.Close>
+                          <Button
+                            variant="solid"
+                            color="red"
+                            onClick={() => deleteApiKey(key.id)}
+                          >
+                            Delete
+                          </Button>
+                        </Dialog.Close>
+                      </Flex>
+                    </Dialog.Content>
+                  </Dialog.Root>
+                </Flex>
+              </Flex>
+            </Card>
+          ))}
+        </Flex>
+      </Card>
+    </Flex>
+  );
+}

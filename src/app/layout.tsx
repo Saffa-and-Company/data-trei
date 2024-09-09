@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import "@radix-ui/themes/styles.css";
 import { Theme } from "@radix-ui/themes";
+import * as Toast from "@radix-ui/react-toast";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +29,7 @@ export default function RootLayout({
           panelBackground="solid"
           scaling="100%"
         >
+          <Toaster position="bottom-right" />
           {children}
         </Theme>
       </body>
