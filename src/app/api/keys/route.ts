@@ -39,6 +39,9 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
+    if (error.code === '23505') { // PostgreSQL error code for unique constraint violation
+      return NextResponse.json({ error: 'You already have an API key' }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Failed to create API key' }, { status: 500 });
   }
 

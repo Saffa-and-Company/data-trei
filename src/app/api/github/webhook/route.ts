@@ -1,11 +1,49 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { apiKeyAuth } from '@/middleware/apiKeyAuth';
 
 export async function POST(request: Request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+  const { searchParams } = new URL(request.url);
+  const user_id = searchParams.get('user_id');
+
+  if (!user_id) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+  }
+
+  // Fetch the user's API key
+  const { data: apiKeyData, error: apiKeyError } = await supabase
+    .from('api_keys')
+    .select('key')
+    .eq('user_id', user_id)
+    .eq('active', true)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (apiKeyError || !apiKeyData) {
+    return NextResponse.json({ error: 'No active API key found for the user' }, { status: 400 });
+  }
+
+  // Create a new request object with the API key in the header
+  const newRequest = new Request(request.url, {
+    method: request.method,
+    headers: {
+      ...request.headers,
+      'X-API-Key': apiKeyData.key
+    },
+    body: request.body
+  });
+
+  // Now use apiKeyAuth with the new request
+  const authResponse = await apiKeyAuth(newRequest);
+  if ('error' in authResponse) {
+    return NextResponse.json({ error: authResponse.error }, { status: authResponse.status });
+  }
+
   const payload = await request.json();
 
   const repoName = payload.repository.name;
@@ -65,10 +103,12 @@ export async function POST(request: Request) {
   const { error } = await supabase
     .from('event_logs')
     .insert({
+      user_id: authResponse.user_id,
       source: 'github',
       repo_name: repoName,
       event_type: eventType,
       message: message,
+      api_key_id: authResponse.api_key_id
     });
 
   if (error) {

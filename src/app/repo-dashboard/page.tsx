@@ -14,23 +14,14 @@ import {
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Database } from "@/types/supabase";
 
-interface TrackedRepo {
-  id: number;
-  repo_name: string;
-}
-
-interface RepoLog {
-  id: number;
-  repo_name: string;
-  event_type: string;
-  message: string;
-  created_at: string;
-}
+type TrackedRepo = Database["public"]["Tables"]["tracked_repos"]["Row"];
+type EventLog = Database["public"]["Tables"]["event_logs"]["Row"];
 
 export default function RepoDashboardPage() {
   const [trackedRepos, setTrackedRepos] = useState<TrackedRepo[]>([]);
-  const [repoLogs, setRepoLogs] = useState<RepoLog[]>([]);
+  const [repoLogs, setRepoLogs] = useState<EventLog[]>([]);
   const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
   const supabase = createClient();
   const router = useRouter();
@@ -54,25 +45,31 @@ export default function RepoDashboardPage() {
   }, []);
 
   const fetchTrackedRepos = async () => {
-    const { data, error } = await supabase
-      .from("tracked_repos")
-      .select("id, repo_name");
+    const { data, error } = await supabase.from("tracked_repos").select("*");
     if (error) console.error("Error fetching tracked repos:", error);
-    else setTrackedRepos(data);
+    else setTrackedRepos(data || []);
   };
 
   const fetchEventLogs = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("User not authenticated");
+      router.push("/login");
+      return;
+    }
+
     const { data, error } = await supabase
       .from("event_logs")
       .select("*")
+      // .eq("user_id", user.id)
       .order("created_at", { ascending: false });
+
     if (error) {
       console.error("Error fetching event logs:", error);
-      if (error.message === "GitHub token is invalid or revoked") {
-        router.push("/dashboard");
-      }
     } else {
-      setRepoLogs(data);
+      setRepoLogs(data || []);
     }
   };
 
@@ -130,10 +127,12 @@ export default function RepoDashboardPage() {
                     </Text>
                   </Flex>
                   <Text>{log.message}</Text>
-                  <br />
-                  <Text size="1" color="gray" mt="2">
-                    Repository: {log.repo_name}
-                  </Text>
+                  <Flex justify="between" align="center" mt="2">
+                    <Text size="1" color="gray">
+                      Repository: {log.repo_name}
+                    </Text>
+                    <Badge color="green">{log.source}</Badge>
+                  </Flex>
                 </Card>
               ))}
             </Flex>

@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { apiKeyAuth } from '@/middleware/apiKeyAuth';
 
 export async function POST(request: Request) {
   const authResponse = await apiKeyAuth(request);
-  if (authResponse) return authResponse;
-
-  const supabase = createClient();
-
-  // Authenticate the request
-  const apiKey = request.headers.get('X-API-Key');
-  if (apiKey !== process.env.WEBHOOK_API_KEY) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if ('error' in authResponse) {
+    return NextResponse.json({ error: authResponse.error }, { status: authResponse.status });
   }
 
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  
   const payload = await request.json();
 
   // Validate the payload
@@ -31,8 +30,9 @@ export async function POST(request: Request) {
       repo_name,
       event_type,
       message,
-      created_at: timestamp || new Date().toISOString(),
-      metadata
+      metadata: metadata,
+      api_key_id: authResponse.api_key_id,
+      user_id: authResponse.user_id,
     });
 
   if (error) {

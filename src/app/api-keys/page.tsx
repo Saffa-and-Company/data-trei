@@ -116,10 +116,16 @@ export default function ApiKeysPage() {
           Create New API Key
         </Heading>
         <Flex gap="4" align="end">
-          <Button onClick={createApiKey}>
-            <PlusIcon />
-            Create Key
-          </Button>
+          {apiKeys.length === 0 ? (
+            <Button onClick={createApiKey}>
+              <PlusIcon />
+              Create Key
+            </Button>
+          ) : (
+            <Text>
+              You already have an API key. Only one key is allowed per user.
+            </Text>
+          )}
         </Flex>
       </Card>
 
