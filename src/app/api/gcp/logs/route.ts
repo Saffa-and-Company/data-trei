@@ -62,7 +62,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ logs: [] });
     }
 
-    console.log('Sample log entry:', JSON.stringify(entries[0], null, 2));
+
 
     const formattedLogs = entries.map(entry => {
       if (!entry || !entry.metadata) {
