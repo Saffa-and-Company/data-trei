@@ -107,64 +107,94 @@ export default function GCPIntegration() {
   };
 
   return (
-    <Flex direction="column" gap="4">
-      <Text size="5" weight="bold">
-        GCP Integration
-      </Text>
-      {!isConnected ? (
-        <Button onClick={handleConnect}>Connect GCP</Button>
-      ) : (
-        <>
-          <Text>GCP Connected</Text>
-          <Select.Root
-            value={selectedProject || undefined}
-            onValueChange={setSelectedProject}
-          >
-            <Select.Trigger placeholder="Select a project" />
-            <Select.Content>
-              {projects.map((project) => (
-                <Select.Item key={project.projectId} value={project.projectId}>
-                  {project.name}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
-          <Button
-            onClick={fetchGCPLogs}
-            loading={isLoading}
-            disabled={!selectedProject || isLoading}
-          >
-            Fetch GCP Logs
-          </Button>
-          <ScrollArea style={{ height: "300px" }}>
-            {logs.map((log, index) => (
-              <Card key={index} style={{ marginBottom: "8px" }}>
-                <Text size="2" weight="bold">
-                  {log.severity} - {log.resource.type}
-                </Text>
-                {log.httpRequest && (
-                  <Text size="2">
-                    {log.httpRequest.requestMethod} {log.httpRequest.requestUrl}{" "}
-                    - Status: {log.httpRequest.status}
-                  </Text>
-                )}
-                <Text size="2">
-                  {log.textPayload ||
-                    (log.jsonPayload
-                      ? JSON.stringify(log.jsonPayload)
-                      : "No payload")}
-                </Text>
-                {log.labels && (
-                  <Text size="1">Labels: {JSON.stringify(log.labels)}</Text>
-                )}
-                <Text size="1" color="gray">
-                  {new Date(log.timestamp).toLocaleString()} - {log.logName}
-                </Text>
-              </Card>
-            ))}
-          </ScrollArea>
-        </>
-      )}
-    </Flex>
+    <Card style={{ width: "100%", maxWidth: "800px", margin: "0 auto" }}>
+      <Flex direction="column" gap="4" p="4">
+        <Text size="5" weight="bold">
+          GCP Integration
+        </Text>
+        {!isConnected ? (
+          <Button onClick={handleConnect}>Connect GCP</Button>
+        ) : (
+          <>
+            <Text>GCP Connected</Text>
+            <Select.Root
+              value={selectedProject || undefined}
+              onValueChange={setSelectedProject}
+            >
+              <Select.Trigger placeholder="Select a project" />
+              <Select.Content>
+                {projects.map((project) => (
+                  <Select.Item
+                    key={project.projectId}
+                    value={project.projectId}
+                  >
+                    {project.name}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+            <Button
+              onClick={fetchGCPLogs}
+              disabled={!selectedProject || isLoading}
+            >
+              Fetch GCP Logs
+              {isLoading && <Spinner ml="2" />}
+            </Button>
+            <Card style={{ height: "400px" }}>
+              <ScrollArea style={{ height: "100%" }}>
+                {logs.map((log, index) => (
+                  <Card
+                    key={index}
+                    style={{ marginBottom: "16px", padding: "12px" }}
+                  >
+                    <Flex direction="column" gap="2">
+                      <Flex justify="between" align="center">
+                        <Text size="2" weight="bold">
+                          {log.severity} - {log.resource.type}
+                        </Text>
+                        <Text size="1" color="gray">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </Text>
+                      </Flex>
+
+                      {log.httpRequest && (
+                        <Text size="2">
+                          {log.httpRequest.requestMethod}{" "}
+                          {log.httpRequest.requestUrl} - Status:{" "}
+                          {log.httpRequest.status}
+                        </Text>
+                      )}
+
+                      <Text
+                        size="2"
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {log.textPayload ||
+                          (log.jsonPayload
+                            ? JSON.stringify(log.jsonPayload, null, 2)
+                            : "No payload")}
+                      </Text>
+
+                      {log.labels && (
+                        <Text size="1">
+                          Labels: {JSON.stringify(log.labels, null, 2)}
+                        </Text>
+                      )}
+
+                      <Text size="1" color="gray">
+                        Log Name: {log.logName}
+                      </Text>
+                    </Flex>
+                  </Card>
+                ))}
+              </ScrollArea>
+            </Card>
+          </>
+        )}
+      </Flex>
+    </Card>
   );
 }
