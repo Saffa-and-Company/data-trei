@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { apiKeyAuth } from '@/middleware/apiKeyAuth';
 
+type RequestInitWithDuplex = RequestInit & { duplex?: 'half' | 'full' };
+
 export async function POST(request: Request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,8 +37,9 @@ export async function POST(request: Request) {
       ...request.headers,
       'X-API-Key': apiKeyData.key
     },
-    body: request.body
-  });
+    body: request.body,
+    duplex: 'half'
+  } as RequestInitWithDuplex);
 
   // Now use apiKeyAuth with the new request
   const authResponse = await apiKeyAuth(newRequest);

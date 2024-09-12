@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       }
 
       // Set up new webhook
-      const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/github/webhook?user_id=${user.id}`;
+      const webhookUrl = `${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/api/github/webhook?user_id=${user.id}`;
       const webhookResponse = await octokit.repos.createWebhook({
         owner,
         repo: repoName,
