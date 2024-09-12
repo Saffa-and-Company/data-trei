@@ -12,7 +12,11 @@ import {
 } from "@radix-ui/themes";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
-interface Repo {
+interface Props {
+  onRepoSelect?: (repo: Repo) => void;
+}
+
+export interface Repo {
   id: number;
   name: string;
   owner: {
@@ -20,7 +24,7 @@ interface Repo {
   };
 }
 
-export default function GitHubIntegration() {
+export default function GitHubIntegration({ onRepoSelect }: Props) {
   const [isConnected, setIsConnected] = useState(false);
   const [repos, setRepos] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -148,7 +152,10 @@ export default function GitHubIntegration() {
                               ? "var(--accent-9)"
                               : "inherit",
                         }}
-                        onClick={() => setSelectedRepo(repo)}
+                        onClick={() => {
+                          setSelectedRepo(repo);
+                          onRepoSelect && onRepoSelect(repo);
+                        }}
                       >
                         <Text>
                           {repo.owner.login} / {repo.name}

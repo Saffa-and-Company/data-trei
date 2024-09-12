@@ -11,7 +11,7 @@ import {
 } from "@radix-ui/react-icons";
 
 import GithubIntegration from "@/components/GithubIntegration";
-import TrackedRepos from "@/components/TrackedRepos";
+import GCPIntegration from "@/components/GCPIntegration";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -47,17 +47,18 @@ export default function DashboardPage() {
             <ActivityLogIcon />
             View Repository Dashboard
           </Button>
-          {/* <Button onClick={() => router.push("/github-integration")} size="3">
-            <GitHubLogoIcon />
-            Manage GitHub Integration
-          </Button> */}
           <Button onClick={() => router.push("/api-keys")} size="3">
             <LockClosedIcon />
             Manage API Keys
           </Button>
+          <Button onClick={() => router.push("/github-connections")} size="3">
+            <GitHubLogoIcon />
+            Manage GitHub Connections
+          </Button>
         </Flex>
 
         <GithubIntegration />
+        <GCPIntegration />
       </Flex>
     </Container>
   );
