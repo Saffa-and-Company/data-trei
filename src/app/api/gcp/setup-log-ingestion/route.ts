@@ -111,14 +111,34 @@ export async function POST(request: Request) {
     });
 
     const sinkName = `data-trei-sink-${uuidv4()}`;
-    await logging.projects.sinks.create({
+    const sink = await logging.projects.sinks.create({
       parent: `projects/${projectId}`,
       requestBody: {
         name: sinkName,
         destination: `pubsub.googleapis.com/projects/${projectId}/topics/${topicName}`,
-        filter: 'logName:"projects/${projectId}/logs/cloudaudit.googleapis.com"',
+        filter: `logName:projects/${projectId}/logs/`,
       },
     });
+
+    const serviceAccount = sink.data.writerIdentity;
+
+    if (projectId && topicName && serviceAccount) {
+      await pubsub.projects.topics.setIamPolicy({
+        resource: `projects/${projectId}/topics/${topicName}`,
+        requestBody: {
+          policy: {
+            bindings: [
+              {
+                role: 'roles/pubsub.publisher',
+                members: [serviceAccount],
+              },
+            ],
+          },
+        },
+      });
+    } else {
+      throw new Error('Project ID or Topic Name is undefined');
+    }
 
     const subscriptionName = `data-trei-sub-${uuidv4()}`;
     await pubsub.projects.subscriptions.create({
@@ -126,7 +146,7 @@ export async function POST(request: Request) {
       requestBody: {
         topic: `projects/${projectId}/topics/${topicName}`,
         pushConfig: {
-          pushEndpoint: `${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/api/gcp/log-ingestion`,
+          pushEndpoint: `${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/api/gcp/log-ingestion?user_id=${user.id}`,
         },
       },
     });

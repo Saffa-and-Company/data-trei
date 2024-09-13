@@ -9,22 +9,27 @@ export async function POST(request: Request) {
   );
 
   try {
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('user_id');
+
+    if (!userId) {
+      console.error('User ID not provided in the request');
+      return NextResponse.json({ error: 'User ID not provided' }, { status: 400 });
+    }
+
     console.log('Parsing request body');
     const body = await request.json();
     console.log('Received body:', JSON.stringify(body, null, 2));
 
     let logEntry;
     if (body.message && body.message.data) {
-      // If the log is wrapped in a Pub/Sub message format
       console.log('Decoding Pub/Sub message');
       logEntry = JSON.parse(Buffer.from(body.message.data, 'base64').toString());
     } else {
-      // If the log is sent directly
       logEntry = body;
     }
     console.log('Parsed log entry:', JSON.stringify(logEntry, null, 2));
 
-    // Extract the project ID from the log entry
     const projectId = logEntry.resource?.labels?.project_id;
 
     if (!projectId) {
@@ -35,6 +40,7 @@ export async function POST(request: Request) {
     console.log('Extracted project ID:', projectId);
 
     const formattedLog = {
+      user_id: userId,
       project_id: projectId,
       timestamp: logEntry.timestamp,
       severity: logEntry.severity,

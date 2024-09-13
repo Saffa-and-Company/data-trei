@@ -11,6 +11,7 @@ import {
 import { createClient } from "@/utils/supabase/client";
 
 interface GCPLog {
+  id: string;
   timestamp: string;
   severity: string;
   resource: {
@@ -45,11 +46,31 @@ export default function GCPIntegration() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [logs, setLogs] = useState<GCPLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isIngestionSetup, setIsIngestionSetup] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
     checkGCPConnection();
+    return () => {
+      supabase.removeAllChannels();
+    };
   }, []);
+
+  useEffect(() => {
+    if (selectedProject) {
+      checkIngestionStatus();
+    }
+  }, [selectedProject]);
+
+  useEffect(() => {
+    if (selectedProject && isIngestionSetup) {
+      fetchInitialLogs();
+      const subscription = subscribeToLogs();
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [selectedProject, isIngestionSetup]);
 
   const checkGCPConnection = async () => {
     const {
@@ -86,6 +107,28 @@ export default function GCPIntegration() {
     }
   };
 
+  const checkIngestionStatus = async () => {
+    if (!selectedProject) return;
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("gcp_log_ingestion")
+        .select("*")
+        .eq("project_id", selectedProject)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        throw error;
+      }
+
+      setIsIngestionSetup(!!data);
+    } catch (error) {
+      console.error("Error checking ingestion status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const setupLogIngestion = async () => {
     if (!selectedProject) return;
     setIsLoading(true);
@@ -98,7 +141,7 @@ export default function GCPIntegration() {
       if (response.ok) {
         const data = await response.json();
         console.log("Log ingestion set up successfully:", data);
-        // You might want to update the UI to show that log ingestion is set up
+        setIsIngestionSetup(true);
       } else {
         console.error("Failed to set up log ingestion");
       }
@@ -109,7 +152,7 @@ export default function GCPIntegration() {
     }
   };
 
-  const fetchGCPLogs = async () => {
+  const fetchInitialLogs = async () => {
     if (!selectedProject) return;
     setIsLoading(true);
     try {
@@ -123,10 +166,33 @@ export default function GCPIntegration() {
       if (error) throw error;
       setLogs(data);
     } catch (error) {
-      console.error("Error fetching GCP logs:", error);
+      console.error("Error fetching initial GCP logs:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const subscribeToLogs = () => {
+    return supabase
+      .channel(`public:gcp_logs:project_id=eq.${selectedProject}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "gcp_logs",
+          filter: `project_id=eq.${selectedProject}`,
+        },
+        (payload) => {
+          console.log("New log received:", payload.new);
+          setLogs((currentLogs) => {
+            const newLog = payload.new as GCPLog;
+            const updatedLogs = [newLog, ...currentLogs];
+            return updatedLogs.slice(0, 50); // Keep only the latest 50 logs
+          });
+        }
+      )
+      .subscribe();
   };
 
   return (
@@ -141,7 +207,10 @@ export default function GCPIntegration() {
           <Text>GCP Connected</Text>
           <Select.Root
             value={selectedProject || undefined}
-            onValueChange={setSelectedProject}
+            onValueChange={(value) => {
+              setSelectedProject(value);
+              setLogs([]);
+            }}
           >
             <Select.Trigger placeholder="Select a project" />
             <Select.Content>
@@ -152,71 +221,66 @@ export default function GCPIntegration() {
               ))}
             </Select.Content>
           </Select.Root>
-          <Button
-            onClick={setupLogIngestion}
-            disabled={!selectedProject || isLoading}
-          >
-            Set Up Log Ingestion
-          </Button>
-          <Button
-            onClick={fetchGCPLogs}
-            disabled={!selectedProject || isLoading}
-          >
-            Fetch GCP Logs
-            {isLoading && <Spinner ml="2" />}
-          </Button>
-          <Card style={{ height: "400px" }}>
-            <ScrollArea style={{ height: "100%" }}>
-              {logs.map((log, index) => (
-                <Card
-                  key={index}
-                  style={{ marginBottom: "16px", padding: "12px" }}
-                >
-                  <Flex direction="column" gap="2">
-                    <Flex justify="between" align="center">
-                      <Text size="2" weight="bold">
-                        {log.severity} - {log.resource.type}
+          {selectedProject && !isIngestionSetup && (
+            <Button onClick={setupLogIngestion} disabled={isLoading}>
+              Set Up Log Ingestion
+            </Button>
+          )}
+          {isLoading && <Spinner />}
+          {isIngestionSetup && (
+            <Card style={{ height: "400px" }}>
+              <ScrollArea style={{ height: "100%" }}>
+                {logs.map((log) => (
+                  <Card
+                    key={log.id}
+                    style={{ marginBottom: "16px", padding: "12px" }}
+                  >
+                    <Flex direction="column" gap="2">
+                      <Flex justify="between" align="center">
+                        <Text size="2" weight="bold">
+                          {log.severity} - {log.resource.type}
+                        </Text>
+                        <Text size="1" color="gray">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </Text>
+                      </Flex>
+
+                      {log.httpRequest && (
+                        <Text size="2">
+                          {log.httpRequest.requestMethod}{" "}
+                          {log.httpRequest.requestUrl} - Status:{" "}
+                          {log.httpRequest.status}
+                        </Text>
+                      )}
+
+                      <Text
+                        size="2"
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {log.textPayload ||
+                          (log.jsonPayload
+                            ? JSON.stringify(log.jsonPayload, null, 2)
+                            : "No payload")}
                       </Text>
+
+                      {log.labels && (
+                        <Text size="1">
+                          Labels: {JSON.stringify(log.labels, null, 2)}
+                        </Text>
+                      )}
+
                       <Text size="1" color="gray">
-                        {new Date(log.timestamp).toLocaleString()}
+                        Log Name: {log.logName}
                       </Text>
                     </Flex>
-
-                    {log.httpRequest && (
-                      <Text size="2">
-                        {log.httpRequest.requestMethod}{" "}
-                        {log.httpRequest.requestUrl} - Status:{" "}
-                        {log.httpRequest.status}
-                      </Text>
-                    )}
-
-                    <Text
-                      size="2"
-                      style={{
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                      }}
-                    >
-                      {log.textPayload ||
-                        (log.jsonPayload
-                          ? JSON.stringify(log.jsonPayload, null, 2)
-                          : "No payload")}
-                    </Text>
-
-                    {log.labels && (
-                      <Text size="1">
-                        Labels: {JSON.stringify(log.labels, null, 2)}
-                      </Text>
-                    )}
-
-                    <Text size="1" color="gray">
-                      Log Name: {log.logName}
-                    </Text>
-                  </Flex>
-                </Card>
-              ))}
-            </ScrollArea>
-          </Card>
+                  </Card>
+                ))}
+              </ScrollArea>
+            </Card>
+          )}
         </>
       )}
     </Flex>
