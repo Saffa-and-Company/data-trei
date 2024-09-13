@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# AWS Setup for Data Trei
 
-## Getting Started
+To integrate AWS CloudWatch logs with Data Trei, follow these steps:
 
-First, run the development server:
+1. **Create an IAM Role:**
+   - Go to the AWS IAM console
+   - Create a new role
+   - Choose "Another AWS account" as the trusted entity
+   - Enter the Data Trei AWS account ID (contact support for this)
+   - Add the following permissions to the role:
+     - CloudWatchLogsReadOnlyAccess
+     - AWSLambdaReadOnlyAccess (if using Lambda)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **Configure Data Trei:**
+   - Log in to your Data Trei dashboard
+   - Navigate to "AWS Integration"
+   - Enter the ARN of the IAM role you created
+   - Click "Connect AWS"
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. **Select Log Groups:**
+   - Once connected, you can select the log groups you want to monitor
+   - Typically, these will be in the format `/aws/lambda/your-function-name`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. **View Logs:**
+   - After setup, you can view your AWS CloudWatch logs directly in the Data Trei dashboard
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Note: Ensure that your AWS account has the necessary permissions to create IAM roles and access CloudWatch logs.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+For any issues or questions, please contact Data Trei support.

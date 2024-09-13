@@ -46,8 +46,11 @@ export async function GET(request: Request) {
 
     const logging = new Logging({ 
       projectId: projectId,
-      authClient: oauth2Client as JSONClient 
+      authClient: oauth2Client as JSONClient,
+      scopes: ['https://www.googleapis.com/auth/logging.read', 'https://www.googleapis.com/auth/cloud-platform.read-only']
     });
+
+    console.log('Logging client initialized');
 
     console.log('Fetching logs for project:', projectId);
 
