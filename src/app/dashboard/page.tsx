@@ -55,10 +55,12 @@ export default function DashboardPage() {
             <GitHubLogoIcon />
             Manage GitHub Connections
           </Button>
+          <Button onClick={() => router.push("/gcp-integration")} size="3">
+            GCP Integration
+          </Button>
         </Flex>
 
         <GithubIntegration />
-        <GCPIntegration />
       </Flex>
     </Container>
   );

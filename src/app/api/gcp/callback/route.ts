@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { getToken } from '@/utils/gcpOAuth';
-
+import { oauth2Client } from '@/utils/gcpOAuth';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
@@ -17,9 +17,14 @@ export async function GET(request: Request) {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
+      oauth2Client.setCredentials({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+      });
+      const {token } = await oauth2Client.getAccessToken();
       const { error } = await supabase.from('gcp_connections').upsert({
         user_id: user.id,
-        access_token: tokens.access_token,
+        access_token: token,
         refresh_token: tokens.refresh_token,
     
         expires_at: new Date(tokens.expiry_date!).toISOString(),

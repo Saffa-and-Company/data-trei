@@ -29,20 +29,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'GCP not connected' }, { status: 400 });
   }
 
+  
+
   oauth2Client.setCredentials({
     access_token: gcpConnection.access_token,
     refresh_token: gcpConnection.refresh_token,
   });
 
   try {
-    const { token } = await oauth2Client.getAccessToken();
-    console.log('Refreshed Access Token:', token);
-    
-    if (token !== gcpConnection.access_token) {
-      await supabase.from('gcp_connections').update({
-        access_token: token,
-      }).eq('user_id', user.id);
-    }
+  
 
     const logging = new Logging({ 
       projectId: projectId,

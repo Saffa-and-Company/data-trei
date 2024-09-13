@@ -86,19 +86,42 @@ export default function GCPIntegration() {
     }
   };
 
+  const setupLogIngestion = async () => {
+    if (!selectedProject) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/gcp/setup-log-ingestion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: selectedProject }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Log ingestion set up successfully:", data);
+        // You might want to update the UI to show that log ingestion is set up
+      } else {
+        console.error("Failed to set up log ingestion");
+      }
+    } catch (error) {
+      console.error("Error setting up log ingestion:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const fetchGCPLogs = async () => {
     if (!selectedProject) return;
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/gcp/logs?projectId=${selectedProject}`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setLogs(data.logs);
-      } else {
-        console.error("Failed to fetch GCP logs");
-      }
+      const { data, error } = await supabase
+        .from("gcp_logs")
+        .select("*")
+        .eq("project_id", selectedProject)
+        .order("timestamp", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setLogs(data);
     } catch (error) {
       console.error("Error fetching GCP logs:", error);
     } finally {
@@ -129,6 +152,12 @@ export default function GCPIntegration() {
               ))}
             </Select.Content>
           </Select.Root>
+          <Button
+            onClick={setupLogIngestion}
+            disabled={!selectedProject || isLoading}
+          >
+            Set Up Log Ingestion
+          </Button>
           <Button
             onClick={fetchGCPLogs}
             disabled={!selectedProject || isLoading}

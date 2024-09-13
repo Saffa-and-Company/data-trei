@@ -10,7 +10,9 @@ const oauth2Client = new OAuth2Client(
 export function getAuthUrl() {
   const scopes = [
     'https://www.googleapis.com/auth/logging.read',
-    'https://www.googleapis.com/auth/cloud-platform.read-only'
+    'https://www.googleapis.com/auth/cloud-platform.read-only',
+    'https://www.googleapis.com/auth/pubsub',
+    'https://www.googleapis.com/auth/logging.admin'
   ];
 
   return oauth2Client.generateAuthUrl({
