@@ -10,35 +10,13 @@ import {
 } from "@radix-ui/themes";
 import { createClient } from "@/utils/supabase/client";
 
-interface GCPLog {
-  id: string;
-  timestamp: string;
-  severity: string;
-  resource: {
-    type: string;
-    labels: {
-      [key: string]: string;
-    };
-  };
-  httpRequest?: {
-    requestMethod: string;
-    requestUrl: string;
-    status: number;
-    userAgent: string;
-    remoteIp: string;
-  } | null;
-  labels?: {
-    [key: string]: string;
-  } | null;
-  logName?: string | null;
-  textPayload: string | null;
-  jsonPayload: any | null;
-}
+import { Database } from "@/types/supabase";
 
 interface GCPProject {
   projectId: string;
   name: string;
 }
+type GCPLog = Database["public"]["Tables"]["gcp_logs"]["Row"];
 
 export default function GCPIntegration() {
   const [isConnected, setIsConnected] = useState(false);
@@ -238,20 +216,12 @@ export default function GCPIntegration() {
                     <Flex direction="column" gap="2">
                       <Flex justify="between" align="center">
                         <Text size="2" weight="bold">
-                          {log.severity} - {log.resource.type}
+                          {log.severity}
                         </Text>
                         <Text size="1" color="gray">
                           {new Date(log.timestamp).toLocaleString()}
                         </Text>
                       </Flex>
-
-                      {log.httpRequest && (
-                        <Text size="2">
-                          {log.httpRequest.requestMethod}{" "}
-                          {log.httpRequest.requestUrl} - Status:{" "}
-                          {log.httpRequest.status}
-                        </Text>
-                      )}
 
                       <Text
                         size="2"
@@ -260,9 +230,9 @@ export default function GCPIntegration() {
                           wordBreak: "break-word",
                         }}
                       >
-                        {log.textPayload ||
-                          (log.jsonPayload
-                            ? JSON.stringify(log.jsonPayload, null, 2)
+                        {log.text_payload ||
+                          (log.json_payload
+                            ? JSON.stringify(log.json_payload, null, 2)
                             : "No payload")}
                       </Text>
 
@@ -273,7 +243,7 @@ export default function GCPIntegration() {
                       )}
 
                       <Text size="1" color="gray">
-                        Log Name: {log.logName}
+                        Log Name: {log.log_name}
                       </Text>
                     </Flex>
                   </Card>

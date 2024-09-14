@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -20,7 +21,7 @@ export type Database = {
           name: string | null
           usage_count: number | null
           usage_limit: number | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           active?: boolean | null
@@ -32,7 +33,7 @@ export type Database = {
           name?: string | null
           usage_count?: number | null
           usage_limit?: number | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           active?: boolean | null
@@ -44,13 +45,54 @@ export type Database = {
           name?: string | null
           usage_count?: number | null
           usage_limit?: number | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "api_keys_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aws_connections: {
+        Row: {
+          access_key_id: string
+          created_at: string | null
+          expiration: string
+          role_arn: string
+          secret_access_key: string
+          session_token: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_key_id: string
+          created_at?: string | null
+          expiration: string
+          role_arn: string
+          secret_access_key: string
+          session_token: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_key_id?: string
+          created_at?: string | null
+          expiration?: string
+          role_arn?: string
+          secret_access_key?: string
+          session_token?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aws_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -96,6 +138,132 @@ export type Database = {
             columns: ["api_key_id"]
             isOneToOne: false
             referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gcp_connections: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          refresh_token: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          refresh_token: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          refresh_token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gcp_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gcp_log_ingestion: {
+        Row: {
+          created_at: string | null
+          id: string
+          log_sink: string
+          project_id: string
+          pubsub_topic: string | null
+          subscription_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          log_sink: string
+          project_id: string
+          pubsub_topic?: string | null
+          subscription_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          log_sink?: string
+          project_id?: string
+          pubsub_topic?: string | null
+          subscription_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gcp_log_ingestion_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gcp_logs: {
+        Row: {
+          fetched_at: string | null
+          http_request: Json | null
+          id: string
+          json_payload: Json | null
+          labels: Json | null
+          log_name: string | null
+          project_id: string
+          resource: Json
+          severity: string
+          text_payload: string | null
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          fetched_at?: string | null
+          http_request?: Json | null
+          id?: string
+          json_payload?: Json | null
+          labels?: Json | null
+          log_name?: string | null
+          project_id: string
+          resource: Json
+          severity: string
+          text_payload?: string | null
+          timestamp: string
+          user_id?: string | null
+        }
+        Update: {
+          fetched_at?: string | null
+          http_request?: Json | null
+          id?: string
+          json_payload?: Json | null
+          labels?: Json | null
+          log_name?: string | null
+          project_id?: string
+          resource?: Json
+          severity?: string
+          text_payload?: string | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gcp_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -159,6 +327,35 @@ export type Database = {
             foreignKeyName: "tracked_repos_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
