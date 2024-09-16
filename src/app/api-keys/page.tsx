@@ -94,10 +94,10 @@ export default function ApiKeysPage() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(
       () => {
-        successToast("API key copied to clipboard");
+        successToast("Copied to clipboard");
       },
       (err) => {
-        errorToast("Failed to copy API key");
+        errorToast("Failed to copy");
       }
     );
   };
@@ -199,6 +199,59 @@ export default function ApiKeysPage() {
             </Card>
           ))}
         </Flex>
+      </Card>
+
+      <Card>
+        <Flex justify="between" align="center" mb="4">
+          <Heading size="3">How to Use Your API Key</Heading>
+          <Button
+            variant="soft"
+            onClick={() =>
+              copyToClipboard(`curl -X POST ${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/api/webhook/log \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: YOUR_API_KEY_HERE" \\
+  -d '{
+    "repo_name": "example-repo",
+    "event_type": "custom_event",
+    "message": "This is a custom log message",
+    "timestamp": "2023-05-01T12:00:00Z",
+    "metadata": {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  }'`)
+            }
+          >
+            <CopyIcon />
+            Copy Command
+          </Button>
+        </Flex>
+        <Text mb="2">
+          You can use your API key to send custom logs to Data Trei. Here&apos;s
+          an example using curl:
+        </Text>
+        <Card variant="surface">
+          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+            {`curl -X POST ${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/api/webhook/log \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: YOUR_API_KEY_HERE" \\
+  -d '{
+    "repo_name": "example-repo",
+    "event_type": "custom_event",
+    "message": "This is a custom log message",
+    "timestamp": "2023-05-01T12:00:00Z",
+    "metadata": {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  }'`}
+          </pre>
+        </Card>
+        <Text mt="2">
+          Replace &apos;YOUR_API_KEY_HERE&apos; with your actual API key. You
+          can customize the payload to include relevant information about your
+          event.
+        </Text>
       </Card>
     </Flex>
   );
