@@ -51,19 +51,16 @@ export default function GCPIntegration() {
   }, [selectedProject, isIngestionSetup]);
 
   const checkGCPConnection = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase
-        .from("gcp_connections")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-      setIsConnected(!!data);
-      if (data) {
-        fetchGCPProjects();
-      }
+    const { data, error } = await supabase
+      .from("gcp_connections")
+      .select("expires_at")
+      .single();
+
+    if (data && new Date(data.expires_at) > new Date()) {
+      setIsConnected(true);
+      fetchGCPProjects();
+    } else {
+      setIsConnected(false);
     }
   };
 
@@ -72,6 +69,7 @@ export default function GCPIntegration() {
   };
 
   const fetchGCPProjects = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch("/api/gcp/projects");
       if (response.ok) {
@@ -82,6 +80,8 @@ export default function GCPIntegration() {
       }
     } catch (error) {
       console.error("Error fetching GCP projects:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

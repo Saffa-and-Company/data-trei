@@ -11,14 +11,18 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data: gcpConnection } = await supabase
+  const { data: gcpConnection, error } = await supabase
     .from('gcp_connections')
-    .select('access_token, refresh_token')
+    .select('access_token, refresh_token, expires_at')
     .eq('user_id', user.id)
     .single();
 
-  if (!gcpConnection) {
+  if (error || !gcpConnection) {
     return NextResponse.json({ error: 'GCP not connected' }, { status: 400 });
+  }
+
+  if (new Date(gcpConnection.expires_at) <= new Date()) {
+    return NextResponse.json({ error: 'GCP connection expired' }, { status: 401 });
   }
 
   oauth2Client.setCredentials({
