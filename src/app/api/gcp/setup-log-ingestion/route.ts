@@ -5,71 +5,6 @@ import { oauth2Client } from '@/utils/gcpOAuth';
 import { google } from 'googleapis';
 import { v4 as uuidv4 } from 'uuid';
 
-async function deleteExistingSetup(projectId: string, supabase: any, user: any, oauth2Client: any) {
-    console.log('Deleting existing log ingestion setup');
-    
-    const { data: existingSetup, error: fetchError } = await supabase
-      .from('gcp_log_ingestion')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('project_id', projectId)
-      .single();
-  
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error('Error fetching existing setup:', fetchError);
-      throw fetchError;
-    }
-  
-    if (existingSetup) {
-      const pubsub = google.pubsub({ version: 'v1', auth: oauth2Client });
-      const logging = google.logging({ version: 'v2', auth: oauth2Client });
-  
-      try {
-        // Delete log sink
-        if (existingSetup.log_sink) {
-          await logging.projects.sinks.delete({
-            sinkName: `projects/${projectId}/sinks/${existingSetup.log_sink}`,
-          });
-          console.log('Deleted existing log sink');
-        }
-  
-        // Delete Pub/Sub subscription
-        if (existingSetup.subscription_name) {
-          await pubsub.projects.subscriptions.delete({
-            subscription: `projects/${projectId}/subscriptions/${existingSetup.subscription_name}`,
-          });
-          console.log('Deleted existing Pub/Sub subscription');
-        }
-  
-        // Delete Pub/Sub topic
-        if (existingSetup.pubsub_topic) {
-          await pubsub.projects.topics.delete({
-            topic: `projects/${projectId}/topics/${existingSetup.pubsub_topic}`,
-          });
-          console.log('Deleted existing Pub/Sub topic');
-        }
-  
-        // Delete record from Supabase
-        const { error: deleteError } = await supabase
-          .from('gcp_log_ingestion')
-          .delete()
-          .eq('id', existingSetup.id);
-  
-        if (deleteError) {
-          console.error('Error deleting existing setup from Supabase:', deleteError);
-          throw deleteError;
-        }
-  
-        console.log('Deleted existing setup from Supabase');
-      } catch (error) {
-        console.error('Error deleting existing setup:', error);
-        throw error;
-      }
-    } else {
-      console.log('No existing setup found');
-    }
-  }
-
 export async function POST(request: Request) {
   const { projectId } = await request.json();
 
@@ -95,13 +30,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'GCP not connected' }, { status: 400 });
   }
 
+  // Check if the project is already set up
+  const { data: existingLogIngestion, error: existingLogIngestionError } = await supabase
+    .from('gcp_log_ingestion')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('project_id', projectId)
+    .single();
+
+  if (existingLogIngestion) {
+    return NextResponse.json({ error: 'Log ingestion already set up for this project' }, { status: 409 });
+  }
+
   oauth2Client.setCredentials({
     access_token: gcpConnection.access_token,
     refresh_token: gcpConnection.refresh_token,
   });
 
   try {
-    await deleteExistingSetup(projectId, supabase, user, oauth2Client);
     const pubsub = google.pubsub({ version: 'v1', auth: oauth2Client });
     const logging = google.logging({ version: 'v2', auth: oauth2Client });
 

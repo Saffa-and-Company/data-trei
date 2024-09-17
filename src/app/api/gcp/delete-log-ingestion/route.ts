@@ -60,23 +60,36 @@ export async function POST(request: Request) {
 
     // Delete log sink
     if (existingSetup.log_sink) {
-      await logging.projects.sinks.delete({
-        sinkName: `projects/${projectId}/sinks/${existingSetup.log_sink}`,
-      });
+      try {
+        await logging.projects.sinks.delete({
+          sinkName: `projects/${projectId}/sinks/${existingSetup.log_sink}`,
+        });
+      } catch (error) {
+        console.error('Error deleting log sink:', error);
+        // Continue with deletion of other resources even if sink deletion fails
+      }
     }
 
     // Delete Pub/Sub subscription
     if (existingSetup.subscription_name) {
-      await pubsub.projects.subscriptions.delete({
-        subscription: `projects/${projectId}/subscriptions/${existingSetup.subscription_name}`,
-      });
+      try {
+        await pubsub.projects.subscriptions.delete({
+          subscription: `projects/${projectId}/subscriptions/${existingSetup.subscription_name}`,
+        });
+      } catch (error) {
+        console.error('Error deleting Pub/Sub subscription:', error);
+      }
     }
 
     // Delete Pub/Sub topic
     if (existingSetup.pubsub_topic) {
-      await pubsub.projects.topics.delete({
-        topic: `projects/${projectId}/topics/${existingSetup.pubsub_topic}`,
-      });
+      try {
+        await pubsub.projects.topics.delete({
+          topic: `projects/${projectId}/topics/${existingSetup.pubsub_topic}`,
+        });
+      } catch (error) {
+        console.error('Error deleting Pub/Sub topic:', error);
+      }
     }
 
     // Delete record from Supabase
@@ -87,6 +100,24 @@ export async function POST(request: Request) {
 
     if (deleteError) {
       throw deleteError;
+    }
+
+    // Cleanup: Check for and delete any orphaned sinks
+    try {
+      const sinks = await logging.projects.sinks.list({
+        parent: `projects/${projectId}`,
+      });
+
+      for (const sink of sinks.data.sinks || []) {
+        if (sink.name?.includes('data-trei-sink')) {
+          await logging.projects.sinks.delete({
+            sinkName: sink.name,
+          });
+          console.log(`Deleted orphaned sink: ${sink.name}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error during orphaned sink cleanup:', error);
     }
 
     return NextResponse.json({ success: true });

@@ -10,6 +10,7 @@ import {
   Heading,
 } from "@radix-ui/themes";
 import { createClient } from "@/utils/supabase/client";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 import { Database } from "@/types/supabase";
 import { errorToast, successToast } from "./Toast";
@@ -32,6 +33,8 @@ export default function GCPIntegration() {
     string | null
   >(null);
   const [isSettingUpIngestion, setIsSettingUpIngestion] = useState(false);
+  const [realtimeChannel, setRealtimeChannel] =
+    useState<RealtimeChannel | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -42,7 +45,14 @@ export default function GCPIntegration() {
   useEffect(() => {
     if (selectedProjectId) {
       fetchLogs(selectedProjectId);
+      setupRealtimeListener(selectedProjectId);
+    } else {
+      cleanupRealtimeListener();
     }
+
+    return () => {
+      cleanupRealtimeListener();
+    };
   }, [selectedProjectId]);
 
   const checkGCPConnection = async () => {
@@ -178,6 +188,38 @@ export default function GCPIntegration() {
       errorToast("An error occurred while deleting log ingestion");
     } finally {
       setIsSettingUpIngestion(false);
+    }
+  };
+
+  const setupRealtimeListener = (projectId: string) => {
+    cleanupRealtimeListener();
+
+    const channel = supabase
+      .channel(`gcp_logs_${projectId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "gcp_logs",
+          filter: `project_id=eq.${projectId}`,
+        },
+        (payload) => {
+          setLogs((prevLogs) => [
+            payload.new as GCPLog,
+            ...prevLogs.slice(0, 49),
+          ]);
+        }
+      )
+      .subscribe();
+
+    setRealtimeChannel(channel);
+  };
+
+  const cleanupRealtimeListener = () => {
+    if (realtimeChannel) {
+      supabase.removeChannel(realtimeChannel);
+      setRealtimeChannel(null);
     }
   };
 
