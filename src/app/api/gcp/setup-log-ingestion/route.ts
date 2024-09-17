@@ -150,7 +150,6 @@ export async function POST(request: Request) {
         },
       },
     });
-
     const { error: insertError } = await supabase.from('gcp_log_ingestion').insert({
       user_id: user.id,
       project_id: projectId,
@@ -160,6 +159,9 @@ export async function POST(request: Request) {
     });
 
     if (insertError) {
+      if (insertError.code === '23505') { // Unique constraint violation
+        return NextResponse.json({ error: 'Log ingestion already set up for this project' }, { status: 409 });
+      }
       throw insertError;
     }
 
