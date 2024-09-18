@@ -1,4 +1,3 @@
-
 export type Json =
   | string
   | number
@@ -98,46 +97,50 @@ export type Database = {
           },
         ]
       }
-      event_logs: {
+      custom_logs: {
         Row: {
           api_key_id: string | null
-          created_at: string
+          created_at: string | null
           event_type: string
-          id: number
+          id: string
           message: string
           metadata: Json | null
           repo_name: string
-          source: string | null
           user_id: string | null
         }
         Insert: {
           api_key_id?: string | null
-          created_at?: string
+          created_at?: string | null
           event_type: string
-          id?: number
+          id?: string
           message: string
           metadata?: Json | null
           repo_name: string
-          source?: string | null
           user_id?: string | null
         }
         Update: {
           api_key_id?: string | null
-          created_at?: string
+          created_at?: string | null
           event_type?: string
-          id?: number
+          id?: string
           message?: string
           metadata?: Json | null
           repo_name?: string
-          source?: string | null
           user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_event_logs_api_key"
+            foreignKeyName: "custom_logs_api_key_id_fkey"
             columns: ["api_key_id"]
             isOneToOne: false
             referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -299,6 +302,44 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      github_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          event_type: string
+          id: number
+          message: string
+          repo_name: string
+          user_id: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: number
+          message: string
+          repo_name: string
+          user_id?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: number
+          message?: string
+          repo_name?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_event_logs_api_key"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
             referencedColumns: ["id"]
           },
         ]

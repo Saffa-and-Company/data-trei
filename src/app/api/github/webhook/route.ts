@@ -104,10 +104,9 @@ export async function POST(request: Request) {
   }
 
   const { error } = await supabase
-    .from('event_logs')
+    .from('github_logs')
     .insert({
       user_id: authResponse.user_id,
-      source: 'github',
       repo_name: repoName,
       event_type: eventType,
       message: message,

@@ -25,10 +25,10 @@ export default function TrackedRepos() {
     fetchEventLogs();
 
     const repoLogsSubscription = supabase
-      .channel("event_logs_changes")
+      .channel("github_logs_changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "event_logs" },
+        { event: "*", schema: "public", table: "github_logs" },
         handleRepoLogsChange
       )
       .subscribe();
@@ -48,7 +48,7 @@ export default function TrackedRepos() {
 
   const fetchEventLogs = async () => {
     const { data, error } = await supabase
-      .from("event_logs")
+      .from("github_logs")
       .select("*")
       .order("created_at", { ascending: false });
     if (error) {

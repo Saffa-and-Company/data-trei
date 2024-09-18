@@ -15,9 +15,10 @@ import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Database } from "@/types/supabase";
+import GeminiLogAnalysis from "@/components/GeminiLogAnalysis";
 
 type TrackedRepo = Database["public"]["Tables"]["tracked_repos"]["Row"];
-type EventLog = Database["public"]["Tables"]["event_logs"]["Row"];
+type EventLog = Database["public"]["Tables"]["github_logs"]["Row"];
 
 export default function RepoDashboardPage() {
   const [trackedRepos, setTrackedRepos] = useState<TrackedRepo[]>([]);
@@ -31,10 +32,10 @@ export default function RepoDashboardPage() {
     fetchEventLogs();
 
     const repoLogsSubscription = supabase
-      .channel("event_logs_changes")
+      .channel("github_logs_changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "event_logs" },
+        { event: "*", schema: "public", table: "github_logs" },
         handleEventLogsChange
       )
       .subscribe();
@@ -61,7 +62,7 @@ export default function RepoDashboardPage() {
     }
 
     const { data, error } = await supabase
-      .from("event_logs")
+      .from("github_logs")
       .select("*")
       // .eq("user_id", user.id)
       .order("created_at", { ascending: false });
@@ -90,6 +91,8 @@ export default function RepoDashboardPage() {
           <Button variant="soft">Back to Main Dashboard</Button>
         </Link>
       </Flex>
+
+      <GeminiLogAnalysis />
 
       <Flex gap="6">
         <Card style={{ width: "30%" }}>
@@ -131,7 +134,6 @@ export default function RepoDashboardPage() {
                     <Text size="1" color="gray">
                       Repository: {log.repo_name}
                     </Text>
-                    <Badge color="green">{log.source}</Badge>
                   </Flex>
                 </Card>
               ))}

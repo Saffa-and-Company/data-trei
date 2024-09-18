@@ -12,6 +12,7 @@ import {
 
 import GithubIntegration from "@/components/GithubIntegration";
 import GCPIntegration from "@/components/GCPIntegration";
+import GeminiLogAnalysis from "@/components/GeminiLogAnalysis";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function DashboardPage() {
           Logout
         </Button>
       </Flex>
+      <GeminiLogAnalysis />
       <Flex direction="column" gap="6" align="center" py="9">
         <Heading size="8" align="center">
           Welcome to Data Trei

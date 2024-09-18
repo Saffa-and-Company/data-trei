@@ -24,9 +24,8 @@ export async function POST(request: Request) {
 
   // Store the log
   const { error } = await supabase
-    .from('event_logs')
+    .from('custom_logs')
     .insert({
-      source: 'webhook',
       repo_name,
       event_type,
       message,
