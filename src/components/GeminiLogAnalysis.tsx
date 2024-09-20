@@ -1,24 +1,80 @@
-import { useState } from "react";
-import { Button, TextField, Card, Text, Flex, Select } from "@radix-ui/themes";
+import { useState, useRef, useEffect } from "react";
+import {
+  Button,
+  TextField,
+  Card,
+  Text,
+  Flex,
+  Select,
+  Box,
+} from "@radix-ui/themes";
 import { createClient } from "@/utils/supabase/client";
+import parse from "html-react-parser";
+
+const parseAnswer = (text: string) => {
+  // Convert **bold** to <strong>bold</strong>
+  text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+  // Convert *italic* to <em>italic</em>
+  text = text.replace(/\*(.*?)\*/g, "<em>$1</em>");
+
+  // Convert `code` to <code>code</code>
+  text = text.replace(/`(.*?)`/g, "<code>$1</code>");
+
+  // Convert URLs to clickable links
+  text = text.replace(
+    /(https?:\/\/[^\s]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+  );
+
+  // Convert newlines to <br> tags
+  text = text.replace(/\n/g, "<br>");
+
+  return text;
+};
 
 export default function GeminiLogAnalysis() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [newText, setNewText] = useState("");
   const [loading, setLoading] = useState(false);
   const [logType, setLogType] = useState("github");
+  const answerRef = useRef<HTMLDivElement>(null);
+  const textQueueRef = useRef<string[]>([]);
   const supabase = createClient();
 
   const handleAskQuestion = async () => {
     setLoading(true);
+    setAnswer("");
+    setNewText("");
+    textQueueRef.current = [];
     try {
       const response = await fetch("/api/gemini/analyze-logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question, logType }),
       });
-      const data = await response.json();
-      setAnswer(data.answer);
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("Failed to get response reader");
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split("\n\n");
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") {
+              setLoading(false);
+              return;
+            }
+            textQueueRef.current.push(parseAnswer(data));
+          }
+        }
+      }
     } catch (error) {
       console.error("Error asking question:", error);
       setAnswer("An error occurred while processing your question.");
@@ -31,6 +87,29 @@ export default function GeminiLogAnalysis() {
       handleAskQuestion();
     }
   };
+
+  useEffect(() => {
+    const processQueue = () => {
+      if (textQueueRef.current.length > 0) {
+        const nextChunk = textQueueRef.current.shift();
+        setNewText(nextChunk || "");
+        setTimeout(() => {
+          setAnswer((prev) => prev + (nextChunk || ""));
+          setNewText("");
+        }, 500);
+      }
+    };
+
+    const intervalId = setInterval(processQueue, 600);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    if (answerRef.current) {
+      answerRef.current.scrollTop = answerRef.current.scrollHeight;
+    }
+  }, [answer]);
 
   return (
     <Card style={{ marginBottom: "20px" }}>
@@ -61,9 +140,21 @@ export default function GeminiLogAnalysis() {
             {loading ? "Processing..." : "Ask Question"}
           </Button>
         </Flex>
-        {answer && (
+        {(answer || newText) && (
           <Card variant="surface">
-            <Text>{answer}</Text>
+            <Box
+              ref={answerRef}
+              style={{
+                maxHeight: "400px",
+                overflowY: "auto",
+                position: "relative",
+              }}
+            >
+              <Text>{parse(answer)}</Text>
+              <Text className={newText ? "animate-fade-in" : ""}>
+                {parse(newText)}
+              </Text>
+            </Box>
           </Card>
         )}
       </Flex>
