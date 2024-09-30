@@ -87,13 +87,15 @@ export async function POST(request: Request) {
       throw new Error('Project ID or Topic Name is undefined');
     }
 
+    const webhookUrl = `${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/api/gcp/log-ingestion?user_id=${user.id}`;
+
     const subscriptionName = `data-trei-sub-${uuidv4()}`;
     await pubsub.projects.subscriptions.create({
       name: `projects/${projectId}/subscriptions/${subscriptionName}`,
       requestBody: {
         topic: `projects/${projectId}/topics/${topicName}`,
         pushConfig: {
-          pushEndpoint: `${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/api/gcp/log-ingestion?user_id=${user.id}`,
+          pushEndpoint: webhookUrl,
         },
       },
     });
