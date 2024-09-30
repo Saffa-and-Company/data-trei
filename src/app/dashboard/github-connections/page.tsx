@@ -123,9 +123,6 @@ export default function GitHubConnectionsPage() {
           </Table.Root>
         </ScrollArea>
       </Card>
-      <Button onClick={() => router.push("/dashboard")} size="3">
-        Back to Dashboard
-      </Button>
     </Flex>
   );
 }

@@ -10,6 +10,7 @@ import {
   GearIcon,
 } from "@radix-ui/react-icons";
 import { createClient } from "@/utils/supabase/client";
+import Image from "next/image";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -40,9 +41,14 @@ export default function Navbar() {
         backgroundColor: "var(--gray-1)",
       }}
     >
-      <Heading size="6" mb="6">
-        Data Trei
-      </Heading>
+      <div className="w-[300px] h-[100px] relative">
+        <Image
+          src="/images/heading_logo.svg"
+          alt="Logo"
+          style={{ objectFit: "fill" }}
+          fill
+        />
+      </div>
       <Flex direction="column" gap="3" style={{ flex: 1 }}>
         <NavButton
           icon={<HomeIcon />}
