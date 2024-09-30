@@ -8,6 +8,7 @@ import {
   ExitIcon,
   HomeIcon,
   GearIcon,
+  FileTextIcon,
 } from "@radix-ui/react-icons";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
@@ -76,6 +77,12 @@ export default function Navbar() {
           label="GCP Integration"
           path="/dashboard/gcp-integration"
           isActive={isActive("/dashboard/gcp-integration")}
+        />
+        <NavButton
+          icon={<FileTextIcon />}
+          label="Custom Logs"
+          path="/dashboard/custom-logs"
+          isActive={isActive("/dashboard/custom-logs")}
         />
       </Flex>
       <Separator size="4" my="4" />
