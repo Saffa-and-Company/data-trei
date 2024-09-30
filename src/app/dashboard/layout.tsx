@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import Loader from "@/components/Loader";
 import Navbar from "@/components/Navbar";
 import { Flex } from "@radix-ui/themes";
+import FloatingChatButton from "@/components/FloatingChatButton";
 
 export default function DashboardLayout({
   children,
@@ -45,6 +46,7 @@ export default function DashboardLayout({
         }}
       >
         {children}
+        <FloatingChatButton />
       </Flex>
     </Flex>
   );

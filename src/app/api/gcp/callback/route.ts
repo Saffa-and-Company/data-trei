@@ -30,13 +30,13 @@ export async function GET(request: Request) {
 
       if (error) {
         console.error('Error storing GCP connection:', error);
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/gcp-integration?error=gcp_connection_error`);
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/gcp-integration?error=gcp_connection_error`);
       }
     }
 
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/gcp-integration?success=gcp_connected`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/gcp-integration?success=gcp_connected`);
   } catch (error) {
     console.error('Error getting GCP token:', error);
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/gcp-integration?error=gcp_token_error`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/gcp-integration?error=gcp_token_error`);
   }
 }

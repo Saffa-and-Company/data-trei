@@ -11,7 +11,7 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import parse from "html-react-parser";
 import { parseAnswer } from "@/utils/helper";
-
+import { PaperPlaneIcon } from "@radix-ui/react-icons";
 export default function GeminiLogAnalysis() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -93,9 +93,6 @@ export default function GeminiLogAnalysis() {
   return (
     <Card style={{ marginBottom: "20px" }}>
       <Flex direction="column" gap="3">
-        <Text size="5" weight="bold">
-          Ask Gemini about your logs
-        </Text>
         <Flex gap="2">
           <Select.Root
             value={logType}
@@ -116,7 +113,7 @@ export default function GeminiLogAnalysis() {
             style={{ flexGrow: 1 }}
           />
           <Button onClick={handleAskQuestion} disabled={loading}>
-            {loading ? "Processing..." : "Ask Question"}
+            <PaperPlaneIcon />
           </Button>
         </Flex>
         {(answer || newText) && (

@@ -56,12 +56,7 @@ export default function Navbar() {
           path="/dashboard"
           isActive={isActive("/dashboard")}
         />
-        <NavButton
-          icon={<ActivityLogIcon />}
-          label="Repository Dashboard"
-          path="/dashboard/repo-dashboard"
-          isActive={isActive("/dashboard/repo-dashboard")}
-        />
+
         <NavButton
           icon={<LockClosedIcon />}
           label="API Keys"
@@ -70,7 +65,7 @@ export default function Navbar() {
         />
         <NavButton
           icon={<GitHubLogoIcon />}
-          label="GitHub Connections"
+          label="GitHub Integration"
           path="/dashboard/github-connections"
           isActive={isActive("/dashboard/github-connections")}
         />

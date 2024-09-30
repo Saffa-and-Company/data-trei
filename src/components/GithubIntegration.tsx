@@ -9,8 +9,9 @@ import {
   ScrollArea,
   Select,
   Spinner,
+  IconButton,
 } from "@radix-ui/themes";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import { GitHubLogoIcon, PlusIcon } from "@radix-ui/react-icons";
 
 interface Props {
   onRepoSelect?: (repo: Repo) => void;
@@ -73,8 +74,7 @@ export default function GitHubIntegration({ onRepoSelect }: Props) {
     setLoading(false);
   };
 
-  const handleTrackRepo = async () => {
-    if (!selectedRepo) return;
+  const handleTrackRepo = async (repo: Repo) => {
     try {
       const response = await fetch("/api/github/track-repo", {
         method: "POST",
@@ -82,21 +82,21 @@ export default function GitHubIntegration({ onRepoSelect }: Props) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          repoName: selectedRepo.name,
-          repoOwner: selectedRepo.owner.login,
+          repoName: repo.name,
+          repoOwner: repo.owner.login,
         }),
       });
       const data = await response.json();
       if (data.success) {
         alert(
-          `Successfully set up tracking for ${selectedRepo.owner.login}/${selectedRepo.name}`
+          `Successfully set up tracking for ${repo.owner.login}/${repo.name}`
         );
         // Optionally, refresh the list of tracked repos here
       } else {
         console.error("Error tracking repo:", data.error);
         if (response.status === 403) {
           alert(
-            `Unable to set up tracking for ${selectedRepo.owner.login}/${selectedRepo.name}. You may not have sufficient permissions to create webhooks.`
+            `Unable to set up tracking for ${repo.owner.login}/${repo.name}. You may not have sufficient permissions to create webhooks.`
           );
         } else if (data.error === "GitHub not connected") {
           setIsConnected(false);
@@ -105,7 +105,7 @@ export default function GitHubIntegration({ onRepoSelect }: Props) {
           );
         } else {
           alert(
-            `Failed to set up tracking for ${selectedRepo.owner.login}/${selectedRepo.name}: ${data.error}`
+            `Failed to set up tracking for ${repo.owner.login}/${repo.name}: ${data.error}`
           );
         }
       }
@@ -152,14 +152,28 @@ export default function GitHubIntegration({ onRepoSelect }: Props) {
                               ? "var(--accent-9)"
                               : "inherit",
                         }}
-                        onClick={() => {
-                          setSelectedRepo(repo);
-                          onRepoSelect && onRepoSelect(repo);
-                        }}
                       >
-                        <Text>
-                          {repo.owner.login} / {repo.name}
-                        </Text>
+                        <Flex justify="between" align="center">
+                          <Text
+                            onClick={() => {
+                              setSelectedRepo(repo);
+                              onRepoSelect && onRepoSelect(repo);
+                            }}
+                          >
+                            {repo.owner.login} / {repo.name}
+                          </Text>
+                          <IconButton
+                            size="1"
+                            variant="soft"
+                            className="hover:cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTrackRepo(repo);
+                            }}
+                          >
+                            <PlusIcon />
+                          </IconButton>
+                        </Flex>
                       </Card>
                     ))}
                     {hasNextPage && !loading && (
@@ -175,13 +189,6 @@ export default function GitHubIntegration({ onRepoSelect }: Props) {
                   </Flex>
                 </ScrollArea>
               </Card>
-              <Button
-                onClick={handleTrackRepo}
-                size="3"
-                disabled={!selectedRepo}
-              >
-                Track Selected Repository
-              </Button>
             </>
           )}
         </>
