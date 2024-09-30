@@ -39,8 +39,8 @@ export default function DashboardLayout({
       <Navbar />
       <Flex
         style={{
-          marginLeft: "250px",
-          width: "calc(100% - 250px)",
+          marginLeft: "300px",
+          width: "calc(100% - 300px)",
           minHeight: "100vh",
         }}
       >

@@ -32,7 +32,7 @@ export default function Navbar() {
       p="6"
       style={{
         borderRight: "1px solid var(--gray-5)",
-        width: "250px",
+        width: "300px",
         height: "100vh",
         position: "fixed",
         left: 0,
@@ -101,16 +101,7 @@ interface NavButtonProps {
 function NavButton({ icon, label, path, isActive }: NavButtonProps) {
   return (
     <Link href={path} passHref style={{ textDecoration: "none" }}>
-      <Button
-        variant={isActive ? "solid" : "ghost"}
-        style={{
-          justifyContent: "flex-start",
-          width: "100%",
-          backgroundColor: isActive ? "var(--accent-9)" : "transparent",
-          color: isActive ? "white" : "var(--gray-11)",
-          fontWeight: isActive ? "bold" : "normal",
-        }}
-      >
+      <Button variant={isActive ? "surface" : "ghost"} style={{}}>
         {icon}
         <span style={{ marginLeft: "8px" }}>{label}</span>
       </Button>
