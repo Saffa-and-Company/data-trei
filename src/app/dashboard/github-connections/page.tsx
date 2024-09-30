@@ -165,9 +165,7 @@ export default function GitHubConnectionsPage() {
 
   return (
     <Flex direction="column" gap="6" p="6" width="100%">
-      <Heading size="8" align="center">
-        Manage GitHub Integration
-      </Heading>
+      <Heading size="8">GitHub Integration</Heading>
       <Flex direction="row" gap="6">
         <Card style={{ flex: 1 }}>
           <GithubIntegration onRepoSelect={setSelectedRepo} />

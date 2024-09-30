@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function GitHubIntegrationPage() {
   return (
     <Flex direction="column" gap="6" p="6">
-      <Flex justify="between" align="center">
+      <Flex justify="between" align="start">
         <Heading size="8">GitHub Integration</Heading>
         <Link href="/dashboard">
           <Button variant="soft">Back to Main Dashboard</Button>
