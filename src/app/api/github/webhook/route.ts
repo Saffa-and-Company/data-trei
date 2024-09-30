@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   }
 
   // Fetch the user's API key
-  const { data: apiKeyData, error: apiKeyError } = await supabase
+  let { data: apiKeyData, error: apiKeyError } = await supabase
     .from('api_keys')
     .select('key')
     .eq('user_id', user_id)
@@ -35,9 +35,15 @@ export async function POST(request: Request) {
         key: crypto.randomUUID(),
         active: true,
         name: "New API Key",
-        
+
       })
       .single();
+
+      if (newApiKeyError) {
+        return NextResponse.json({ error: newApiKeyError.message }, { status: 500 });
+      }
+
+      apiKeyData = newApiKeyData;
   }
 
   // Create a new request object with the API key in the header
