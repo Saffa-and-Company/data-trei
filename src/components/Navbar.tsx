@@ -75,7 +75,9 @@ export default function Navbar() {
           isActive={isActive("/dashboard/github-connections")}
         />
         <NavButton
-          icon={<GearIcon />}
+          icon={
+            <Image src="/images/gcp.svg" alt="GCP" width={15} height={15} />
+          }
           label="GCP Integration"
           path="/dashboard/gcp-integration"
           isActive={isActive("/dashboard/gcp-integration")}
