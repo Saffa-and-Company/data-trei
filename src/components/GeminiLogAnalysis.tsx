@@ -11,7 +11,6 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import parse from "html-react-parser";
 import { parseAnswer } from "@/utils/helper";
-import { ArrowUpIcon } from "@radix-ui/react-icons";
 
 type GeminiLogAnalysisProps = {
   onClose: () => void;
@@ -144,7 +143,7 @@ export default function GeminiLogAnalysis({ onClose }: GeminiLogAnalysisProps) {
           disabled={loading}
           style={{ width: "48%" }}
         >
-          <ArrowUpIcon />
+          Ask
         </Button>
         <Button variant="outline" onClick={onClose} style={{ width: "48%" }}>
           Close
