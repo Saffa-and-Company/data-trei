@@ -88,6 +88,7 @@ export async function POST(request: Request) {
     }
 
     const webhookUrl = `${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/api/gcp/log-ingestion?user_id=${user.id}`;
+    console.log('webhookUrl', webhookUrl);
 
     const subscriptionName = `data-trei-sub-${uuidv4()}`;
     await pubsub.projects.subscriptions.create({
