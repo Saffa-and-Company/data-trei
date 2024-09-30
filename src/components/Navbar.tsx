@@ -1,4 +1,4 @@
-import { Flex, Heading, Button, Separator } from "@radix-ui/themes";
+import { Flex, Heading, Button, Separator, Box } from "@radix-ui/themes";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -101,10 +101,25 @@ interface NavButtonProps {
 function NavButton({ icon, label, path, isActive }: NavButtonProps) {
   return (
     <Link href={path} passHref style={{ textDecoration: "none" }}>
-      <Button variant={isActive ? "surface" : "ghost"} style={{}}>
-        {icon}
-        <span style={{ marginLeft: "8px" }}>{label}</span>
-      </Button>
+      <Box
+        style={{
+          borderRadius: "4px",
+          color: isActive ? "var(--accent-11)" : "var(--gray-11)",
+          transition: "color 0.2s ease, background-color 0.2s ease",
+        }}
+      >
+        <Flex
+          align="center"
+          style={{
+            backgroundColor: isActive ? "var(--accent-3)" : "transparent",
+            borderRadius: "4px",
+            padding: "8px",
+          }}
+        >
+          {icon}
+          <span style={{ marginLeft: "8px" }}>{label}</span>
+        </Flex>
+      </Box>
     </Link>
   );
 }
