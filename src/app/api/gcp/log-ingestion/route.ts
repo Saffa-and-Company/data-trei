@@ -12,6 +12,10 @@ export async function POST(request: Request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('user_id');
 
+    // Log the entire URL and query parameters
+    console.log(`Received POST request to ${request.url}`);
+    console.log(`Extracted user_id: ${userId}`);
+
     if (!userId) {
       console.error('User ID not provided in the request');
       return NextResponse.json({ error: 'User ID not provided' }, { status: 400 });
