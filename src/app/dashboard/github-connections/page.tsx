@@ -58,8 +58,18 @@ export default function GitHubConnectionsPage() {
       )
       .subscribe();
 
+    const trackedReposSubscription = supabase
+      .channel("tracked_repos_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tracked_repos" },
+        handleTrackedReposChange
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(repoLogsSubscription);
+      supabase.removeChannel(trackedReposSubscription);
     };
   }, [selectedRepo]);
 
@@ -142,6 +152,11 @@ export default function GitHubConnectionsPage() {
   const handleEventLogsChange = (payload: any) => {
     console.log("Change received!", payload);
     fetchEventLogs();
+  };
+
+  const handleTrackedReposChange = (payload: any) => {
+    console.log("Tracked repos change received!", payload);
+    fetchTrackedRepos();
   };
 
   const filteredLogs = selectedTrackedRepo

@@ -27,7 +27,17 @@ export async function POST(request: Request) {
     .single();
 
   if (apiKeyError || !apiKeyData) {
-    return NextResponse.json({ error: 'No active API key found for the user' }, { status: 400 });
+    // create a new api key
+    const { data: newApiKeyData, error: newApiKeyError } = await supabase
+      .from('api_keys')
+      .insert({
+        user_id: user_id,
+        key: crypto.randomUUID(),
+        active: true,
+        name: "New API Key",
+        
+      })
+      .single();
   }
 
   // Create a new request object with the API key in the header
