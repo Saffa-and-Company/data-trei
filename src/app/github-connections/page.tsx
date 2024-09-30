@@ -16,6 +16,7 @@ import { createClient } from "@/utils/supabase/client";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import GithubIntegration, { Repo } from "@/components/GithubIntegration";
 import { customToast } from "@/components/Toast";
+import GithubDataManagement from "@/components/GithubDataManagement";
 
 interface Collaborator {
   id: number;
@@ -89,6 +90,7 @@ export default function GitHubConnectionsPage() {
         <Heading size="8" align="center">
           Manage GitHub Connections
         </Heading>
+        <GithubDataManagement />
         <GithubIntegration onRepoSelect={setSelectedRepo} />
         <Card style={{ width: "100%" }}>
           <Heading size="3" mb="4">
