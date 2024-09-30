@@ -20,6 +20,7 @@ import {
 } from "@radix-ui/react-icons";
 import { createClient } from "@/utils/supabase/client";
 import { successToast, errorToast } from "@/components/Toast";
+import DashboardLayout from "../layout";
 
 interface ApiKey {
   id: string;
@@ -103,12 +104,9 @@ export default function ApiKeysPage() {
   };
 
   return (
-    <Flex direction="column" gap="6" p="6">
-      <Flex justify="between" align="center">
+    <Flex direction="column" gap="6" p="6" width="100%">
+      <Flex justify="between" align="start">
         <Heading size="8">API Key Management</Heading>
-        <Button variant="soft" onClick={() => router.push("/dashboard")}>
-          Back to Dashboard
-        </Button>
       </Flex>
 
       <Card>

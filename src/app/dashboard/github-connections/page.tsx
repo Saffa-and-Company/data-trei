@@ -17,6 +17,7 @@ import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import GithubIntegration, { Repo } from "@/components/GithubIntegration";
 import { customToast } from "@/components/Toast";
 import GithubDataManagement from "@/components/GithubDataManagement";
+import DashboardLayout from "../layout";
 
 interface Collaborator {
   id: number;
@@ -85,48 +86,46 @@ export default function GitHubConnectionsPage() {
   };
 
   return (
-    <Container size="3">
-      <Flex direction="column" gap="6" align="center" py="9">
-        <Heading size="8" align="center">
-          Manage GitHub Connections
+    <Flex direction="column" gap="6" p="6" width="100%">
+      <Heading size="8" align="center">
+        Manage GitHub Connections
+      </Heading>
+      {/* <GithubDataManagement /> */}
+      <GithubIntegration onRepoSelect={setSelectedRepo} />
+      <Card style={{ width: "100%" }}>
+        <Heading size="3" mb="4">
+          GitHub Collaborators
         </Heading>
-        <GithubDataManagement />
-        <GithubIntegration onRepoSelect={setSelectedRepo} />
-        <Card style={{ width: "100%" }}>
-          <Heading size="3" mb="4">
-            GitHub Collaborators
-          </Heading>
-          <ScrollArea style={{ height: "300px" }}>
-            <Table.Root>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>User</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
+        <ScrollArea style={{ height: "300px" }}>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>User</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {collaborators.map((collaborator) => (
+                <Table.Row key={collaborator.id}>
+                  <Table.Cell>{collaborator.login}</Table.Cell>
+                  <Table.Cell>
+                    <Button
+                      onClick={() => revokeAccess(collaborator.login)}
+                      size="1"
+                      color="red"
+                    >
+                      Revoke Access
+                    </Button>
+                  </Table.Cell>
                 </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {collaborators.map((collaborator) => (
-                  <Table.Row key={collaborator.id}>
-                    <Table.Cell>{collaborator.login}</Table.Cell>
-                    <Table.Cell>
-                      <Button
-                        onClick={() => revokeAccess(collaborator.login)}
-                        size="1"
-                        color="red"
-                      >
-                        Revoke Access
-                      </Button>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-          </ScrollArea>
-        </Card>
-        <Button onClick={() => router.push("/dashboard")} size="3">
-          Back to Dashboard
-        </Button>
-      </Flex>
-    </Container>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </ScrollArea>
+      </Card>
+      <Button onClick={() => router.push("/dashboard")} size="3">
+        Back to Dashboard
+      </Button>
+    </Flex>
   );
 }

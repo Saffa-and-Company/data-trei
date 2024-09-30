@@ -10,9 +10,9 @@ import {
   Button,
   ScrollArea,
   Badge,
+  Container,
 } from "@radix-ui/themes";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Database } from "@/types/supabase";
 import GeminiLogAnalysis from "@/components/GeminiLogAnalysis";
@@ -84,63 +84,62 @@ export default function RepoDashboardPage() {
     : repoLogs;
 
   return (
-    <Flex direction="column" gap="6" p="6">
-      <Flex justify="between" align="center">
-        <Heading size="8">Repository Dashboard</Heading>
-        <Link href="/dashboard">
-          <Button variant="soft">Back to Main Dashboard</Button>
-        </Link>
+    <Container size="4" p="6" style={{ width: "100%", maxWidth: "none" }}>
+      <Flex direction="column" gap="6" style={{ width: "100%" }}>
+        <Heading size="8" align="center">
+          Repository Dashboard
+        </Heading>
+        <GeminiLogAnalysis />
+        <Flex gap="6">
+          <Card style={{ width: "30%" }}>
+            <Heading size="4" mb="4">
+              Tracked Repositories
+            </Heading>
+            <ScrollArea style={{ height: "400px" }}>
+              <Flex direction="column" gap="2">
+                {trackedRepos.map((repo) => (
+                  <Button
+                    key={repo.id}
+                    variant={selectedRepo === repo.repo_name ? "solid" : "soft"}
+                    onClick={() => setSelectedRepo(repo.repo_name)}
+                  >
+                    <GitHubLogoIcon />
+                    {repo.repo_name}
+                  </Button>
+                ))}
+              </Flex>
+            </ScrollArea>
+          </Card>
+
+          <Card style={{ width: "70%" }}>
+            <Heading size="4" mb="4">
+              {selectedRepo
+                ? `Logs for ${selectedRepo}`
+                : "All Repository Logs"}
+            </Heading>
+            <ScrollArea style={{ height: "400px" }}>
+              <Flex direction="column" gap="3">
+                {filteredLogs.map((log) => (
+                  <Card key={log.id} style={{ padding: "12px" }}>
+                    <Flex justify="between" align="center" mb="2">
+                      <Badge color="blue">{log.event_type}</Badge>
+                      <Text size="1" color="gray">
+                        {new Date(log.created_at).toLocaleString()}
+                      </Text>
+                    </Flex>
+                    <Text>{log.message}</Text>
+                    <Flex justify="between" align="center" mt="2">
+                      <Text size="1" color="gray">
+                        Repository: {log.repo_name}
+                      </Text>
+                    </Flex>
+                  </Card>
+                ))}
+              </Flex>
+            </ScrollArea>
+          </Card>
+        </Flex>
       </Flex>
-
-      <GeminiLogAnalysis />
-
-      <Flex gap="6">
-        <Card style={{ width: "30%" }}>
-          <Heading size="4" mb="4">
-            Tracked Repositories
-          </Heading>
-          <ScrollArea style={{ height: "400px" }}>
-            <Flex direction="column" gap="2">
-              {trackedRepos.map((repo) => (
-                <Button
-                  key={repo.id}
-                  variant={selectedRepo === repo.repo_name ? "solid" : "soft"}
-                  onClick={() => setSelectedRepo(repo.repo_name)}
-                >
-                  <GitHubLogoIcon />
-                  {repo.repo_name}
-                </Button>
-              ))}
-            </Flex>
-          </ScrollArea>
-        </Card>
-
-        <Card style={{ width: "70%" }}>
-          <Heading size="4" mb="4">
-            {selectedRepo ? `Logs for ${selectedRepo}` : "All Repository Logs"}
-          </Heading>
-          <ScrollArea style={{ height: "400px" }}>
-            <Flex direction="column" gap="3">
-              {filteredLogs.map((log) => (
-                <Card key={log.id} style={{ padding: "12px" }}>
-                  <Flex justify="between" align="center" mb="2">
-                    <Badge color="blue">{log.event_type}</Badge>
-                    <Text size="1" color="gray">
-                      {new Date(log.created_at).toLocaleString()}
-                    </Text>
-                  </Flex>
-                  <Text>{log.message}</Text>
-                  <Flex justify="between" align="center" mt="2">
-                    <Text size="1" color="gray">
-                      Repository: {log.repo_name}
-                    </Text>
-                  </Flex>
-                </Card>
-              ))}
-            </Flex>
-          </ScrollArea>
-        </Card>
-      </Flex>
-    </Flex>
+    </Container>
   );
 }

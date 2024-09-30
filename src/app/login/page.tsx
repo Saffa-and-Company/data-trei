@@ -120,7 +120,7 @@ export default function LoginPage() {
                   <Button
                     onClick={handleSignup}
                     type="button"
-                    variant="solid"
+                    variant="surface"
                     style={{ flex: 1 }}
                   >
                     Sign up

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import Loader from "@/components/Loader";
+import Navbar from "@/components/Navbar";
+import { Flex } from "@radix-ui/themes";
 
 export default function DashboardLayout({
   children,
@@ -26,11 +28,24 @@ export default function DashboardLayout({
     };
 
     checkUser();
-  }, [router, supabase.auth]);
+  }, [router, supabase]);
 
   if (loading) {
     return <Loader />;
   }
 
-  return <>{children}</>;
+  return (
+    <Flex>
+      <Navbar />
+      <Flex
+        style={{
+          marginLeft: "250px",
+          width: "calc(100% - 250px)",
+          minHeight: "100vh",
+        }}
+      >
+        {children}
+      </Flex>
+    </Flex>
+  );
 }
