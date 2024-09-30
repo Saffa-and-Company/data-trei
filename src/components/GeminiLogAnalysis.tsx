@@ -11,8 +11,13 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import parse from "html-react-parser";
 import { parseAnswer } from "@/utils/helper";
-import { PaperPlaneIcon } from "@radix-ui/react-icons";
-export default function GeminiLogAnalysis() {
+import { ArrowUpIcon } from "@radix-ui/react-icons";
+
+type GeminiLogAnalysisProps = {
+  onClose: () => void;
+};
+
+export default function GeminiLogAnalysis({ onClose }: GeminiLogAnalysisProps) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [newText, setNewText] = useState("");
@@ -91,49 +96,60 @@ export default function GeminiLogAnalysis() {
   }, [answer]);
 
   return (
-    <Card style={{ marginBottom: "20px" }}>
-      <Flex direction="column" gap="3">
-        <Flex gap="2">
-          <Select.Root
-            value={logType}
-            onValueChange={(value) => setLogType(value)}
-          >
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="github">GitHub Logs</Select.Item>
-              <Select.Item value="custom">Custom Logs</Select.Item>
-              <Select.Item value="gcp">GCP Logs</Select.Item>
-            </Select.Content>
-          </Select.Root>
-          <TextField.Root
-            placeholder="Ask a question about your logs..."
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            onKeyPress={handleKeyPress}
-            style={{ flexGrow: 1 }}
-          />
-          <Button onClick={handleAskQuestion} disabled={loading}>
-            <PaperPlaneIcon />
-          </Button>
-        </Flex>
-        {(answer || newText) && (
-          <Card variant="surface">
-            <Box
-              ref={answerRef}
-              style={{
-                maxHeight: "400px",
-                overflowY: "auto",
-                position: "relative",
-              }}
-            >
-              <Text>{parse(answer)}</Text>
-              <Text className={newText ? "animate-fade-in" : ""}>
-                {parse(newText)}
-              </Text>
-            </Box>
-          </Card>
-        )}
+    <Flex direction="column" gap="3" style={{ height: "100%" }}>
+      <Flex direction="column" gap="2">
+        <Select.Root
+          value={logType}
+          onValueChange={(value) => setLogType(value)}
+        >
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item value="github">GitHub Logs</Select.Item>
+            <Select.Item value="custom">Custom Logs</Select.Item>
+            <Select.Item value="gcp">GCP Logs</Select.Item>
+          </Select.Content>
+        </Select.Root>
+        <TextField.Root
+          placeholder="Ask a question about your logs..."
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onKeyPress={handleKeyPress}
+          style={{ flexGrow: 1 }}
+        />
       </Flex>
-    </Card>
+      <Card variant="surface" style={{ flexGrow: 1, overflowY: "auto" }}>
+        <Box
+          ref={answerRef}
+          style={{
+            height: "100%",
+            overflowY: "auto",
+            position: "relative",
+          }}
+        >
+          <Text>{parse(answer)}</Text>
+          <Text className={newText ? "animate-fade-in" : ""}>
+            {parse(newText)}
+          </Text>
+        </Box>
+      </Card>
+      <Flex
+        style={{
+          width: "100%",
+          justifyContent: "space-between",
+          marginTop: "auto",
+        }}
+      >
+        <Button
+          onClick={handleAskQuestion}
+          disabled={loading}
+          style={{ width: "48%" }}
+        >
+          <ArrowUpIcon />
+        </Button>
+        <Button variant="outline" onClick={onClose} style={{ width: "48%" }}>
+          Close
+        </Button>
+      </Flex>
+    </Flex>
   );
 }

@@ -89,7 +89,7 @@ export default function RepoDashboardPage() {
         <Heading size="8" align="center">
           Repository Dashboard
         </Heading>
-        <GeminiLogAnalysis />
+
         <Flex gap="6">
           <Card style={{ width: "30%" }}>
             <Heading size="4" mb="4">

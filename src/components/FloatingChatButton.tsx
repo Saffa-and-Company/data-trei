@@ -10,11 +10,12 @@ import {
 } from "@radix-ui/themes";
 import { ChatBubbleIcon, Cross2Icon } from "@radix-ui/react-icons";
 import GeminiLogAnalysis from "./GeminiLogAnalysis";
+import Image from "next/image";
 
 export default function FloatingChatButton() {
   const [isOpen, setIsOpen] = useState(false);
   const chatBoxRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null); // Added ref for the button
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -22,7 +23,7 @@ export default function FloatingChatButton() {
         chatBoxRef.current &&
         !chatBoxRef.current.contains(event.target as Node) &&
         buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node) // Check if click is outside the button
+        !buttonRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -35,32 +36,32 @@ export default function FloatingChatButton() {
   }, []);
 
   const toggleChat = (event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent the event from bubbling up
-    setIsOpen((prev) => !prev); // Use functional state update
+    event.stopPropagation();
+    setIsOpen((prev) => !prev);
   };
 
   return (
     <>
-      <Button
-        ref={buttonRef} // Attach ref to the button
-        size="3"
-        variant="solid"
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          borderRadius: "50%",
-          width: "60px",
-          height: "60px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1000,
-        }}
-        onClick={toggleChat}
-      >
-        <ChatBubbleIcon width="24" height="24" />
-      </Button>
+      {!isOpen && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            zIndex: 1000,
+            cursor: "pointer",
+          }}
+          ref={buttonRef}
+          onClick={toggleChat}
+        >
+          <Image
+            src="/images/ask.svg"
+            alt="Chat with Gemini"
+            width={200}
+            height={50}
+          />
+        </div>
+      )}
 
       {isOpen && (
         <Card
@@ -76,16 +77,15 @@ export default function FloatingChatButton() {
             flexDirection: "column",
           }}
         >
-          <Flex justify="between" align="center" mb="3">
-            <Text size="5" weight="bold">
-              Chat with Gemini
-            </Text>
-            <IconButton size="1" onClick={() => setIsOpen(false)}>
-              <Cross2Icon />
-            </IconButton>
-          </Flex>
+          <Image
+            src="/images/gemini.svg"
+            alt="Chat with Gemini"
+            width={50}
+            height={50}
+            className="p-2 self-center"
+          />
           <ScrollArea style={{ flexGrow: 1 }}>
-            <GeminiLogAnalysis />
+            <GeminiLogAnalysis onClose={() => setIsOpen(false)} />
           </ScrollArea>
         </Card>
       )}

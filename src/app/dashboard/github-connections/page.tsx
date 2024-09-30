@@ -191,7 +191,6 @@ export default function GitHubConnectionsPage() {
       </Flex>
       <Container size="4" style={{ width: "100%", maxWidth: "none" }}>
         <Flex direction="column" gap="6" style={{ width: "100%" }}>
-          <GeminiLogAnalysis />
           <Flex gap="6">
             <Card style={{ width: "30%" }}>
               <Heading size="4" mb="4">
