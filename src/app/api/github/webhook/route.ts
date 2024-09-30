@@ -16,49 +16,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
   }
 
-  // Fetch the user's API key
-  let { data: apiKeyData, error: apiKeyError } = await supabase
-    .from('api_keys')
-    .select('key')
-    .eq('user_id', user_id)
-    .eq('active', true)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (apiKeyError || !apiKeyData) {
-    // create a new api key
-    const { data: newApiKeyData, error: newApiKeyError } = await supabase
-      .from('api_keys')
-      .insert({
-        user_id: user_id,
-        key: crypto.randomUUID(),
-        active: true,
-        name: "New API Key",
-
-      })
-      .single();
-
-      if (newApiKeyError) {
-        return NextResponse.json({ error: newApiKeyError.message }, { status: 500 });
-      }
-
-      apiKeyData = newApiKeyData;
-  }
-
-  // Create a new request object with the API key in the header
-  const newRequest = new Request(request.url, {
-    method: request.method,
-    headers: {
-      ...request.headers,
-      'X-API-Key': apiKeyData.key
-    },
-    body: request.body,
-    duplex: 'half'
-  } as RequestInitWithDuplex);
 
   // Now use apiKeyAuth with the new request
-  const authResponse = await apiKeyAuth(newRequest);
+  const authResponse = await apiKeyAuth(request);
   if ('error' in authResponse) {
     return NextResponse.json({ error: authResponse.error }, { status: authResponse.status });
   }
