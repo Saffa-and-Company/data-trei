@@ -95,8 +95,9 @@ export default function GeminiLogAnalysis({ onClose }: GeminiLogAnalysisProps) {
   }, [answer]);
 
   return (
-    <Flex direction="column" gap="3" style={{ height: "100%" }}>
-      <Flex direction="column" gap="2">
+    <Flex direction="column" style={{ height: "100%", overflow: "hidden" }}>
+      {/* Top Controls */}
+      <Flex direction="column" gap="2" style={{ padding: "16px" }}>
         <Select.Root
           value={logType}
           onValueChange={(value) => setLogType(value)}
@@ -116,13 +117,23 @@ export default function GeminiLogAnalysis({ onClose }: GeminiLogAnalysisProps) {
           style={{ flexGrow: 1 }}
         />
       </Flex>
-      <Card variant="surface" style={{ flexGrow: 1, overflowY: "auto" }}>
+
+      {/* Answer Box */}
+      <Card
+        variant="surface"
+        style={{
+          flex: 1, // Allows the Card to take up remaining space
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0, // Crucial for Flexbox to allow shrinking
+        }}
+      >
         <Box
           ref={answerRef}
           style={{
-            height: "100%",
-            overflowY: "auto",
-            position: "relative",
+            flex: 1, // Makes Box fill the Card's available space
+            overflowY: "auto", // Enables vertical scrolling
+            padding: "16px",
           }}
         >
           <Text>{parse(answer)}</Text>
@@ -131,11 +142,13 @@ export default function GeminiLogAnalysis({ onClose }: GeminiLogAnalysisProps) {
           </Text>
         </Box>
       </Card>
+
+      {/* Bottom Buttons */}
       <Flex
         style={{
           width: "100%",
           justifyContent: "space-between",
-          marginTop: "auto",
+          padding: "16px",
         }}
       >
         <Button

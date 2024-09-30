@@ -84,9 +84,8 @@ export default function FloatingChatButton() {
             height={50}
             className="p-2 self-center"
           />
-          <ScrollArea style={{ flexGrow: 1 }}>
-            <GeminiLogAnalysis onClose={() => setIsOpen(false)} />
-          </ScrollArea>
+
+          <GeminiLogAnalysis onClose={() => setIsOpen(false)} />
         </Card>
       )}
     </>
