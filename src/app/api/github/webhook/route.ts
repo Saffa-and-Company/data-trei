@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { apiKeyAuth } from '@/middleware/apiKeyAuth';
 
-type RequestInitWithDuplex = RequestInit & { duplex?: 'half' | 'full' };
 
 export async function POST(request: Request) {
   const supabase = createClient(
@@ -16,12 +15,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
   }
 
-
-  // Now use apiKeyAuth with the new request
-  const authResponse = await apiKeyAuth(request);
-  if ('error' in authResponse) {
-    return NextResponse.json({ error: authResponse.error }, { status: authResponse.status });
-  }
 
   const payload = await request.json();
 
@@ -82,11 +75,10 @@ export async function POST(request: Request) {
   const { error } = await supabase
     .from('github_logs')
     .insert({
-      user_id: authResponse.user_id,
+      user_id: user_id,
       repo_name: repoName,
       event_type: eventType,
       message: message,
-      api_key_id: authResponse.api_key_id
     });
 
   if (error) {
