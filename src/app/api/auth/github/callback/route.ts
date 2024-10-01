@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const code = searchParams.get('code');
 
   if (!code) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=github_code_missing`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/dashboard?error=github_code_missing`);
   }
 
   const supabase = createClient();
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     const tokenData = await tokenResponse.json();
 
     if (tokenData.error) {
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=github_token_error`);
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/dashboard?error=github_token_error`);
     }
 
     // Store the access token in your database
@@ -54,13 +54,13 @@ export async function GET(request: Request) {
 
       if (error) {
         console.error('Error upserting GitHub connection:', error);
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=github_connection_error`);
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/dashboard?error=github_connection_error`);
       }
     }
 
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=github_connected`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/dashboard?success=github_connected`);
   } catch (error) {
     console.error('Error in GitHub callback:', error);
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?error=github_callback_error`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_PRODUCTION_URL}/dashboard?error=github_callback_error`);
   }
 }
