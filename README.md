@@ -131,4 +131,4 @@ The application is designed to be deployed on Vercel, leveraging its integration
 
 ## License
 
-(Specify the license under which the project is released.)
+(Specify the license under which the project is released.) 
